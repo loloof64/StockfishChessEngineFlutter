@@ -26,44 +26,46 @@ class StockfishChessEngineBindings {
           lookup)
       : _lookup = lookup;
 
-  /// A very short-lived native function.
-  ///
-  /// For very short-lived functions, it is fine to call them on the main isolate.
-  /// They will block the Dart execution while running the native function, so
-  /// only do this for native functions which are guaranteed to be short-lived.
-  int sum(
-    int a,
-    int b,
+  int stockfish_init() {
+    return _stockfish_init();
+  }
+
+  late final _stockfish_initPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function()>>('stockfish_init');
+  late final _stockfish_init = _stockfish_initPtr.asFunction<int Function()>();
+
+  int stockfish_main() {
+    return _stockfish_main();
+  }
+
+  late final _stockfish_mainPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function()>>('stockfish_main');
+  late final _stockfish_main = _stockfish_mainPtr.asFunction<int Function()>();
+
+  int stockfish_stdin_write(
+    ffi.Pointer<ffi.Char> data,
   ) {
-    return _sum(
-      a,
-      b,
+    return _stockfish_stdin_write(
+      data,
     );
   }
 
-  late final _sumPtr =
-      _lookup<ffi.NativeFunction<ffi.IntPtr Function(ffi.IntPtr, ffi.IntPtr)>>(
-          'sum');
-  late final _sum = _sumPtr.asFunction<int Function(int, int)>();
+  late final _stockfish_stdin_writePtr =
+      _lookup<ffi.NativeFunction<ssize_t Function(ffi.Pointer<ffi.Char>)>>(
+          'stockfish_stdin_write');
+  late final _stockfish_stdin_write = _stockfish_stdin_writePtr
+      .asFunction<int Function(ffi.Pointer<ffi.Char>)>();
 
-  /// A longer lived native function, which occupies the thread calling it.
-  ///
-  /// Calling these kind of native functions in the main isolate will
-  /// block Dart execution and cause dropped frames in Flutter applications.
-  /// Consider calling such native functions from a separate isolate.
-  int sum_long_running(
-    int a,
-    int b,
-  ) {
-    return _sum_long_running(
-      a,
-      b,
-    );
+  ffi.Pointer<ffi.Char> stockfish_stdout_read() {
+    return _stockfish_stdout_read();
   }
 
-  late final _sum_long_runningPtr =
-      _lookup<ffi.NativeFunction<ffi.IntPtr Function(ffi.IntPtr, ffi.IntPtr)>>(
-          'sum_long_running');
-  late final _sum_long_running =
-      _sum_long_runningPtr.asFunction<int Function(int, int)>();
+  late final _stockfish_stdout_readPtr =
+      _lookup<ffi.NativeFunction<ffi.Pointer<ffi.Char> Function()>>(
+          'stockfish_stdout_read');
+  late final _stockfish_stdout_read =
+      _stockfish_stdout_readPtr.asFunction<ffi.Pointer<ffi.Char> Function()>();
 }
+
+typedef ssize_t = __ssize_t;
+typedef __ssize_t = ffi.Long;
