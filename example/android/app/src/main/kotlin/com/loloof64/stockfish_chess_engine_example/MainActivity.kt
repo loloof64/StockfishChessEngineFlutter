@@ -1,4 +1,4 @@
-package com.loloof64.stockfish_chess_engine_example
+package com.loloof64.stockfish_example
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:stockfish_chess_engine/stockfish_chess_engine.dart'
-    as stockfish_chess_engine;
+import 'package:stockfish/stockfish.dart' as stockfish;
 
 void main() {
   runApp(const MyApp());

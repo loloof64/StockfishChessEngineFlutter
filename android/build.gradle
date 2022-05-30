@@ -1,6 +1,6 @@
 // The Android Gradle Plugin builds the native code with the Android NDK.
 
-group 'com.loloof64.stockfish_chess_engine'
+group 'com.loloof64.stockfish'
 version '1.0'
 
 buildscript {

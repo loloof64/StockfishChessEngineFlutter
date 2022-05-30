@@ -1,4 +1,4 @@
-#include "stockfish_chess_engine.h"
+#include "stockfish.h"
 
 #include <iostream>
 #include <stdio.h>

@@ -3,16 +3,16 @@
 # the plugin to fail to compile for some customers of the plugin.
 cmake_minimum_required(VERSION 3.10)
 
-project(stockfish VERSION 0.0.1 LANGUAGES CPP)
+project(stockfish VERSION 0.0.1 LANGUAGES CXX)
 file(GLOB_RECURSE cppPaths "Stockfish/src/*.cpp")
 
 add_library(stockfish SHARED
-  "stockfish_chess_engine.cpp"
+  "stockfish.cpp"
   ${cppPaths}
 )
 
 set_target_properties(stockfish PROPERTIES
-  PUBLIC_HEADER stockfish_chess_engine.h
+  PUBLIC_HEADER stockfish.h
   OUTPUT_NAME "stockfish"
 )
 

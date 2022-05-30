@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.loloof64.stockfish_chess_engine_example">
+    package="com.loloof64.stockfish_example">
    <application
-        android:label="stockfish_chess_engine_example"
+        android:label="stockfish_example"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

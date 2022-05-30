@@ -1,5 +1,5 @@
-name: stockfish_chess_engine_example
-description: Demonstrates how to use the stockfish_chess_engine plugin.
+name: stockfish_example
+description: Demonstrates how to use the stockfish plugin.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -30,9 +30,9 @@ dependencies:
   flutter:
     sdk: flutter
 
-  stockfish_chess_engine:
+  stockfish:
     # When depending on this package from a real application you should use:
-    #   stockfish_chess_engine: ^x.y.z
+    #   stockfish: ^x.y.z
     # See https://dart.dev/tools/pub/dependencies#version-constraints
     # The example app is bundled with the plugin so we use a path dependency on
     # the parent directory to use the current plugin's version.

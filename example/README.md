@@ -1,16 +1,9 @@
-# stockfish_chess_engine_example
+# stockfish_example
 
-Demonstrates how to use the stockfish_chess_engine plugin.
+Demonstrates how to use the stockfish plugin.
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
+## For developpers
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Don't forget to run command `dart run ffigen --config ffigen.yaml` in parent folder (main library project folder).
+More on https://pub.dev/packages/ffigen.

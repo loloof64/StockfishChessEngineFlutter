@@ -3,9 +3,9 @@ import 'dart:ffi';
 import 'dart:io';
 import 'dart:isolate';
 
-import 'stockfish_chess_engine_bindings_generated.dart';
+import 'stockfish_bindings_generated.dart';
 
-const String _libName = 'stockfish_chess_engine';
+const String _libName = 'stockfish';
 
 /// The dynamic library in which the symbols for [StockfishChessEngineBindings] can be found.
 final DynamicLibrary _dylib = () {
