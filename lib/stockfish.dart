@@ -1,9 +1,16 @@
+// Using code from https://github.com/ArjanAswal/Stockfish/blob/master/lib/src/stockfish.dart
+
 import 'dart:async';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:flutter/foundation.dart';
+import 'package:logger/logger.dart';
+import 'package:ffi/ffi.dart';
+
 import 'stockfish_bindings_generated.dart';
+import 'stockfish_state.dart';
 
 const String _libName = 'stockfish';
 
@@ -25,79 +32,169 @@ final DynamicLibrary _dylib = () {
 final StockfishChessEngineBindings _bindings =
     StockfishChessEngineBindings(_dylib);
 
-/// A request to compute `sum`.
-///
-/// Typically sent from one isolate to another.
-class _SumRequest {
-  final int id;
-  final int a;
-  final int b;
+/// A wrapper for C++ engine.
+class Stockfish {
+  final Completer<Stockfish>? completer;
 
-  const _SumRequest(this.id, this.a, this.b);
-}
+  final _state = _StockfishState();
+  final _stdoutController = StreamController<String>.broadcast();
+  final _mainPort = ReceivePort();
+  final _stdoutPort = ReceivePort();
 
-/// A response with the result of `sum`.
-///
-/// Typically sent from one isolate to another.
-class _SumResponse {
-  final int id;
-  final int result;
+  late StreamSubscription _mainSubscription;
+  late StreamSubscription _stdoutSubscription;
 
-  const _SumResponse(this.id, this.result);
-}
-
-/// Counter to identify [_SumRequest]s and [_SumResponse]s.
-int _nextSumRequestId = 0;
-
-/// Mapping from [_SumRequest] `id`s to the completers corresponding to the correct future of the pending request.
-final Map<int, Completer<int>> _sumRequests = <int, Completer<int>>{};
-
-/// The SendPort belonging to the helper isolate.
-Future<SendPort> _helperIsolateSendPort = () async {
-  // The helper isolate is going to send us back a SendPort, which we want to
-  // wait for.
-  final Completer<SendPort> completer = Completer<SendPort>();
-
-  // Receive port on the main isolate to receive messages from the helper.
-  // We receive two types of messages:
-  // 1. A port to send messages on.
-  // 2. Responses to requests we sent.
-  final ReceivePort receivePort = ReceivePort()
-    ..listen((dynamic data) {
-      if (data is SendPort) {
-        // The helper isolate sent us the port on which we can sent it requests.
-        completer.complete(data);
-        return;
+  Stockfish._({this.completer}) {
+    _mainSubscription =
+        _mainPort.listen((message) => _cleanUp(message is int ? message : 1));
+    _stdoutSubscription = _stdoutPort.listen((message) {
+      if (message is String) {
+        _stdoutController.sink.add(message);
+      } else {
+        Logger().d('[stockfish] The stdout isolate sent $message');
       }
-      if (data is _SumResponse) {
-        // The helper isolate sent us a response to a request we sent.
-        final Completer<int> completer = _sumRequests[data.id]!;
-        _sumRequests.remove(data.id);
-        completer.complete(data.result);
-        return;
-      }
-      throw UnsupportedError('Unsupported message type: ${data.runtimeType}');
     });
-
-  // Start the helper isolate.
-  await Isolate.spawn((SendPort sendPort) async {
-    final ReceivePort helperReceivePort = ReceivePort()
-      ..listen((dynamic data) {
-        // On the helper isolate listen to requests and respond to them.
-        if (data is _SumRequest) {
-          final int result = _bindings.sum_long_running(data.a, data.b);
-          final _SumResponse response = _SumResponse(data.id, result);
-          sendPort.send(response);
-          return;
+    compute(_spawnIsolates, [_mainPort.sendPort, _stdoutPort.sendPort]).then(
+      (success) {
+        final state = success ? StockfishState.ready : StockfishState.error;
+        _state._setValue(state);
+        if (state == StockfishState.ready) {
+          completer?.complete(this);
         }
-        throw UnsupportedError('Unsupported message type: ${data.runtimeType}');
-      });
+      },
+      onError: (error) {
+        Logger().d('[stockfish] The init isolate encountered an error $error');
+        _cleanUp(1);
+      },
+    );
+  }
 
-    // Send the the port to the main isolate on which we can receive requests.
-    sendPort.send(helperReceivePort.sendPort);
-  }, receivePort.sendPort);
+  static Stockfish? _instance;
 
-  // Wait until the helper isolate has sent us back the SendPort on which we
-  // can start sending requests.
+  /// Creates a C++ engine.
+  ///
+  /// This may throws a [StateError] if an active instance is being used.
+  /// Owner must [dispose] it before a new instance can be created.
+  factory Stockfish() {
+    if (_instance != null) {
+      throw StateError('Multiple instances are not supported, yet.');
+    }
+
+    _instance = Stockfish._();
+    return _instance!;
+  }
+
+  /// The current state of the underlying C++ engine.
+  ValueListenable<StockfishState> get state => _state;
+
+  /// The standard output stream.
+  Stream<String> get stdout => _stdoutController.stream;
+
+  /// The standard input sink.
+  set stdin(String line) {
+    final stateValue = _state.value;
+    if (stateValue != StockfishState.ready) {
+      throw StateError('Stockfish is not ready ($stateValue)');
+    }
+
+    final pointer = '$line\n'.toNativeUtf8();
+    _bindings.stockfish_stdin_write(pointer);
+    calloc.free(pointer);
+  }
+
+  /// Stops the C++ engine.
+  void dispose() {
+    stdin = 'quit';
+  }
+
+  void _cleanUp(int exitCode) {
+    _stdoutController.close();
+
+    _mainSubscription.cancel();
+    _stdoutSubscription.cancel();
+
+    _state._setValue(
+        exitCode == 0 ? StockfishState.disposed : StockfishState.error);
+
+    _instance = null;
+  }
+}
+
+/// Creates a C++ engine asynchronously.
+///
+/// This method is different from the factory method [Stockfish] that
+/// it will wait for the engine to be ready before returning the instance.
+Future<Stockfish> stockfishAsync() {
+  if (Stockfish._instance != null) {
+    return Future.error(StateError('Only one instance can be used at a time'));
+  }
+
+  final completer = Completer<Stockfish>();
+  Stockfish._instance = Stockfish._(completer: completer);
   return completer.future;
-}();
+}
+
+class _StockfishState extends ChangeNotifier
+    implements ValueListenable<StockfishState> {
+  StockfishState _value = StockfishState.starting;
+
+  @override
+  StockfishState get value => _value;
+
+  _setValue(StockfishState v) {
+    if (v == _value) return;
+    _value = v;
+    notifyListeners();
+  }
+}
+
+void _isolateMain(SendPort mainPort) {
+  final exitCode = _bindings.stockfish_main();
+  mainPort.send(exitCode);
+
+  Logger().d('[stockfish] nativeMain returns $exitCode');
+}
+
+void _isolateStdout(SendPort stdoutPort) {
+  String previous = '';
+
+  while (true) {
+    final pointer = _bindings.stockfish_stdout_read();
+
+    if (pointer.address == 0) {
+      Logger().d('[stockfish] nativeStdoutRead returns NULL');
+      return;
+    }
+
+    final data = previous + pointer.toDartString();
+    final lines = data.split('\n');
+    previous = lines.removeLast();
+    for (final line in lines) {
+      stdoutPort.send(line);
+    }
+  }
+}
+
+Future<bool> _spawnIsolates(List<SendPort> mainAndStdout) async {
+  final initResult = _bindings.stockfish_init();
+  if (initResult != 0) {
+    Logger().d('[stockfish] initResult=$initResult');
+    return false;
+  }
+
+  try {
+    await Isolate.spawn(_isolateStdout, mainAndStdout[1]);
+  } catch (error) {
+    Logger().d('[stockfish] Failed to spawn stdout isolate: $error');
+    return false;
+  }
+
+  try {
+    await Isolate.spawn(_isolateMain, mainAndStdout[0]);
+  } catch (error) {
+    Logger().d('[stockfish] Failed to spawn main isolate: $error');
+    return false;
+  }
+
+  return true;
+}

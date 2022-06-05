@@ -10,6 +10,10 @@ This project is based on sources for Stockfish 15.
 Don't forget to run command `dart run ffigen --config ffigen.yaml`.
 More on https://pub.dev/packages/ffigen.
 
+Then, in the generated file:
+* add import to 'package:ffi/ffi.dart'
+* replace occurrences of `ffi.Char` with `Utf8`.
+
 ## Credits
 
 * Using source code from [Stockfish](https://stockfishchess.org).

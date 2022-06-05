@@ -8,12 +8,13 @@ environment:
   flutter: ">=2.11.0"
 
 dependencies:
+  ffi: ^1.2.1
   flutter:
     sdk: flutter
+  logger: ^1.1.0
   plugin_platform_interface: ^2.0.2
 
 dev_dependencies:
-  ffi: ^1.1.2
   ffigen: ^6.0.0
   flutter_test:
     sdk: flutter
