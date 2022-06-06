@@ -41,6 +41,8 @@ class MyAppState extends State<MyApp> {
 
   void _readStockfishOutput(String output) {
     debugPrint(output);
+    // At least now, stockfish is ready : update UI.
+    setState(() {});
     if (output.startsWith('bestmove')) {
       final parts = output.split(' ');
       setState(() {
@@ -80,15 +82,21 @@ class MyAppState extends State<MyApp> {
     setState(() {});
   }
 
-  void _startStockfish() {
+  void _doStartStockfish() async {
+    _stockfish = Stockfish();
+    _stockfishOutputSubsciption =
+        _stockfish.stdout.listen(_readStockfishOutput);
+    await Future.delayed(const Duration(milliseconds: 1100));
+    _stockfish.stdin = 'isready';
+  }
+
+  void _startStockfishIfNecessary() {
     setState(() {
       if (_stockfish.state.value == StockfishState.ready ||
           _stockfish.state.value == StockfishState.starting) {
         return;
       }
-      _stockfish = Stockfish();
-      _stockfishOutputSubsciption =
-          _stockfish.stdout.listen(_readStockfishOutput);
+      _doStartStockfish();
     });
   }
 
@@ -115,50 +123,52 @@ class MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text("Stockfish Chess Engine example"),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              TextField(
-                controller: _fenController,
-                decoration: const InputDecoration(
-                  hintText: 'Position FEN value',
-                  border: OutlineInputBorder(),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                TextField(
+                  controller: _fenController,
+                  decoration: const InputDecoration(
+                    hintText: 'Position FEN value',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
-              ),
-              ElevatedButton(
-                onPressed: _pasteFen,
-                child: const Text('Coller FEN'),
-              ),
-              Slider(
-                value: _timeMs,
-                onChanged: _updateThinkingTime,
-                min: 500,
-                max: 3000,
-              ),
-              Text('Thinking time : ${_timeMs.toInt()} millis'),
-              ElevatedButton(
-                onPressed: _computeNextMove,
-                child: const Text('Search next move'),
-              ),
-              Text('Best move: $_nextMove'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _getStockfishStatusIcon(),
-                  ElevatedButton(
-                    onPressed: _startStockfish,
-                    child: const Text('Start Stockfish'),
-                  ),
-                  ElevatedButton(
-                    onPressed: _stopStockfish,
-                    child: const Text('Stop Stockfish'),
-                  ),
-                ],
-              ),
-            ],
+                ElevatedButton(
+                  onPressed: _pasteFen,
+                  child: const Text('Coller FEN'),
+                ),
+                Slider(
+                  value: _timeMs,
+                  onChanged: _updateThinkingTime,
+                  min: 500,
+                  max: 3000,
+                ),
+                Text('Thinking time : ${_timeMs.toInt()} millis'),
+                ElevatedButton(
+                  onPressed: _computeNextMove,
+                  child: const Text('Search next move'),
+                ),
+                Text('Best move: $_nextMove'),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _getStockfishStatusIcon(),
+                    ElevatedButton(
+                      onPressed: _startStockfishIfNecessary,
+                      child: const Text('Start Stockfish'),
+                    ),
+                    ElevatedButton(
+                      onPressed: _stopStockfish,
+                      child: const Text('Stop Stockfish'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
