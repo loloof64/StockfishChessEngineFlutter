@@ -4,8 +4,39 @@ Use Stockfish chess engine in your Flutter project.
 
 This project is based on sources for Stockfish 15.
 
+## Usage
 
-## For developpers
+```dart
+final stockfish = new Stockfish()
+
+// Create a subscribtion on stdout : subscription that you'll have to cancel before disposing Stockfish.
+final stockfishSubscription = stockfish.stdout.listen((message) {
+    debugPrint(message);
+});
+
+// Get Stockfish ready
+stockfish.stdin = 'isready'
+
+// Send you commands to Stockfish stdin
+stockfish.stdin = 'position startpos' // set up start position
+stockfish.stdin = 'position fen rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2' // set up custom position
+stockfish.stdin = 'go movetime 1500' // search move for at most 1500ms
+
+// Don't remember to dispose Stockfish when you're done.
+stockfishSubscription.cancel();
+stockfish.dispose();
+```
+
+You can see an example usage in example folder.
+
+## Important notes
+
+* You **must** check the position validity before sending it to stdin, otherwise program will crash on illegal position ! And using chess.js is not enough, as it does not check for kings count validity or kings not touching each other, nor the fact that no pawn can be on first/last rank.
+
+* As the library creates two isolates, you must dispose Stockfish before perfoming an hot reload / hot restart, and then creating a new Stockfish instance.
+
+
+## For stockfish chess engine developpers
 
 Don't forget to run command `dart run ffigen --config ffigen.yaml`.
 More on https://pub.dev/packages/ffigen.

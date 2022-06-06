@@ -157,10 +157,11 @@ void _isolateMain(SendPort mainPort) {
   debugPrint('[stockfish] nativeMain returns $exitCode');
 }
 
-void _isolateStdout(SendPort stdoutPort) {
+void _isolateStdout(SendPort stdoutPort) async {
   String previous = '';
 
   while (true) {
+    await Future.delayed(const Duration(milliseconds: 30));
     final pointer = _bindings.stockfish_stdout_read();
 
     if (pointer.address == 0) {
