@@ -3,10 +3,11 @@
 import 'dart:async';
 import 'dart:ffi';
 import 'dart:io';
+import 'dart:convert';
+import 'dart:typed_data';
 import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
-import 'package:logger/logger.dart';
 import 'package:ffi/ffi.dart';
 
 import 'stockfish_bindings_generated.dart';
@@ -51,7 +52,7 @@ class Stockfish {
       if (message is String) {
         _stdoutController.sink.add(message);
       } else {
-        Logger().d('[stockfish] The stdout isolate sent $message');
+        debugPrint('[stockfish] The stdout isolate sent $message');
       }
     });
     compute(_spawnIsolates, [_mainPort.sendPort, _stdoutPort.sendPort]).then(
@@ -63,7 +64,7 @@ class Stockfish {
         }
       },
       onError: (error) {
-        Logger().d('[stockfish] The init isolate encountered an error $error');
+        debugPrint('[stockfish] The init isolate encountered an error $error');
         _cleanUp(1);
       },
     );
@@ -97,9 +98,10 @@ class Stockfish {
       throw StateError('Stockfish is not ready ($stateValue)');
     }
 
-    final pointer = '$line\n'.toNativeUtf8();
+    final unicodePointer = '$line\n'.toNativeUtf8();
+    final pointer = unicodePointer.cast<Char>();
     _bindings.stockfish_stdin_write(pointer);
-    calloc.free(pointer);
+    calloc.free(unicodePointer);
   }
 
   /// Stops the C++ engine.
@@ -152,7 +154,7 @@ void _isolateMain(SendPort mainPort) {
   final exitCode = _bindings.stockfish_main();
   mainPort.send(exitCode);
 
-  Logger().d('[stockfish] nativeMain returns $exitCode');
+  debugPrint('[stockfish] nativeMain returns $exitCode');
 }
 
 void _isolateStdout(SendPort stdoutPort) {
@@ -162,11 +164,21 @@ void _isolateStdout(SendPort stdoutPort) {
     final pointer = _bindings.stockfish_stdout_read();
 
     if (pointer.address == 0) {
-      Logger().d('[stockfish] nativeStdoutRead returns NULL');
+      debugPrint('[stockfish] nativeStdoutRead returns NULL');
       return;
     }
 
-    final data = previous + pointer.toDartString();
+    Uint8List newContentCharList;
+
+    final newContentLength = pointer.cast<Utf8>().length;
+    newContentCharList = Uint8List.view(
+        pointer.cast<Uint8>().asTypedList(newContentLength).buffer,
+        0,
+        newContentLength);
+
+    final newContent = utf8.decode(newContentCharList);
+
+    final data = previous + newContent;
     final lines = data.split('\n');
     previous = lines.removeLast();
     for (final line in lines) {
@@ -178,21 +190,21 @@ void _isolateStdout(SendPort stdoutPort) {
 Future<bool> _spawnIsolates(List<SendPort> mainAndStdout) async {
   final initResult = _bindings.stockfish_init();
   if (initResult != 0) {
-    Logger().d('[stockfish] initResult=$initResult');
+    debugPrint('[stockfish] initResult=$initResult');
     return false;
   }
 
   try {
     await Isolate.spawn(_isolateStdout, mainAndStdout[1]);
   } catch (error) {
-    Logger().d('[stockfish] Failed to spawn stdout isolate: $error');
+    debugPrint('[stockfish] Failed to spawn stdout isolate: $error');
     return false;
   }
 
   try {
     await Isolate.spawn(_isolateMain, mainAndStdout[0]);
   } catch (error) {
-    Logger().d('[stockfish] Failed to spawn main isolate: $error');
+    debugPrint('[stockfish] Failed to spawn main isolate: $error');
     return false;
   }
 

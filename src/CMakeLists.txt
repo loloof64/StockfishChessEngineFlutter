@@ -4,6 +4,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 project(stockfish VERSION 0.0.1 LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
 file(GLOB_RECURSE cppPaths "Stockfish/src/*.cpp")
 
 add_library(stockfish SHARED

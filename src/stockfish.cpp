@@ -1,17 +1,17 @@
 #include "stockfish.h"
 
 #include <iostream>
-#include <stdio.h>
+#include <cstdio>
 #include <unistd.h>
 
-#include "../Stockfish/src/bitboard.h"
-#include "../Stockfish/src/endgame.h"
-#include "../Stockfish/src/position.h"
-#include "../Stockfish/src/search.h"
-#include "../Stockfish/src/thread.h"
-#include "../Stockfish/src/tt.h"
-#include "../Stockfish/src/uci.h"
-#include "../Stockfish/src/syzygy/tbprobe.h"
+#include "Stockfish/src/bitboard.h"
+#include "Stockfish/src/endgame.h"
+#include "Stockfish/src/position.h"
+#include "Stockfish/src/search.h"
+#include "Stockfish/src/thread.h"
+#include "Stockfish/src/tt.h"
+#include "Stockfish/src/uci.h"
+#include "Stockfish/src/syzygy/tbprobe.h"
 
 // https://jineshkj.wordpress.com/2006/12/22/how-to-capture-stdin-stdout-and-stderr-of-child-program/
 #define NUM_PIPES 2
@@ -44,7 +44,7 @@ int stockfish_main()
   dup2(CHILD_WRITE_FD, STDOUT_FILENO);
 
   int argc = 1;
-  char *argv[] = {""};
+  char *argv[] = {(char *) ""};
   int exitCode = main(argc, argv);
 
   std::cout << QUITOK << std::flush;
