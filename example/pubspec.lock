@@ -32,9 +32,11 @@ packages:
   chess:
     dependency: "direct main"
     description:
-      name: chess
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "."
+      ref: "9bc48075ecaab3eb3356c26fee4404a362fe5d54"
+      resolved-ref: "9bc48075ecaab3eb3356c26fee4404a362fe5d54"
+      url: "https://github.com/davecom/chess.dart"
+    source: git
     version: "0.7.0"
   clipboard:
     dependency: "direct main"

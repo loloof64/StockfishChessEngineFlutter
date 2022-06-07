@@ -69,87 +69,18 @@ class MyAppState extends State<MyApp> {
     });
   }
 
-  // Checks that chess.js don't process
-  bool _checkPositionKingsAndPawnsValidity() {
-    final fen = _fenController.text;
-
-    final boardPart = fen.split(' ')[0];
-
-    /* Is white and black kings' count legal ? */
-    final whiteKingCount =
-        boardPart.split('').where((elem) => elem == 'K').length;
-    final blackKingCount =
-        boardPart.split('').where((elem) => elem == 'k').length;
-
-    if (whiteKingCount != 1 || blackKingCount != 1) {
-      return false;
-    }
-
-    /* Are both kings on neighbours cells ? */
-    // Computes a kind of 'expanded' FEN : cells are translated as underscores,
-    //  and removing all slashes.
-    final expandedFen = boardPart.split('').fold<String>('', (accum, curr) {
-      final digitValue = int.tryParse(curr);
-      if (curr == '/') {
-        return accum;
-      } else if (digitValue != null) {
-        var result = '';
-        for (var i = 0; i < digitValue; i++) {
-          result += '_';
-        }
-        return accum + result;
-      } else {
-        return accum + curr;
-      }
-    });
-    final whiteKingIndex = expandedFen.indexOf('K');
-    final blackKingIndex = expandedFen.indexOf('k');
-    final whiteKingCoords = [whiteKingIndex % 8, whiteKingIndex ~/ 8];
-    final blackKingCoords = [blackKingIndex % 8, blackKingIndex ~/ 8];
-
-    final deltaX = (whiteKingCoords[0] - blackKingCoords[0]).abs();
-    final deltaY = (whiteKingCoords[1] - blackKingCoords[1]).abs();
-
-    final kingsTooClose = (deltaX <= 1) && (deltaY <= 1);
-    if (kingsTooClose) {
-      return false;
-    }
-
-    /* Any pawn on first or last rank ? */
-    final firstRank = boardPart.split('/')[0];
-    final lastRank = boardPart.split('/')[7];
-
-    final whitePawnOnFirstRank = firstRank.contains('P');
-    final blackPawnOnFirstRank = firstRank.contains('p');
-    final whitePawnOnLastRank = lastRank.contains('P');
-    final blackPawnOnLastRank = lastRank.contains('p');
-
-    if (whitePawnOnFirstRank ||
-        whitePawnOnLastRank ||
-        blackPawnOnFirstRank ||
-        blackPawnOnLastRank) {
-      return false;
-    }
-
-    return true;
-  }
-
   bool _validPosition() {
-    if (!_checkPositionKingsAndPawnsValidity()) return false;
     final chess = chess_lib.Chess();
-    return chess.load(_fenController.text);
+    return chess.load(_fenController.text.trim());
   }
 
   void _computeNextMove() {
     if (!_validPosition()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Illegal position: ${_fenController.text} !'),
-        ),
-      );
+      final message = 'Illegal position: ${_fenController.text.trim()} !';
+      debugPrint(message);
       return;
     }
-    _stockfish.stdin = 'position fen ${_fenController.text}';
+    _stockfish.stdin = 'position fen ${_fenController.text.trim()}';
     _stockfish.stdin = 'go movetime ${_timeMs.toInt()}';
   }
 
