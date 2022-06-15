@@ -39,7 +39,7 @@ class MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
-    _stockfishOutputSubsciption.cancel();
+    _stopStockfish();
     super.dispose();
   }
 
