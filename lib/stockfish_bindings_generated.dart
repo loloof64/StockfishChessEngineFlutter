@@ -67,5 +67,6 @@ class StockfishChessEngineBindings {
       _stockfish_stdout_readPtr.asFunction<ffi.Pointer<ffi.Char> Function()>();
 }
 
-typedef ssize_t = __ssize_t;
-typedef __ssize_t = ffi.Long;
+typedef ssize_t = SSIZE_T;
+typedef SSIZE_T = LONG_PTR;
+typedef LONG_PTR = ffi.LongLong;

@@ -7,6 +7,7 @@ cmake_minimum_required(VERSION 3.14)
 # Project-level configuration.
 set(PROJECT_NAME "stockfish")
 project(${PROJECT_NAME} LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
 
 # Invoke the build for native code shared with the other target platforms.
 # This can be changed to accomodate different builds.

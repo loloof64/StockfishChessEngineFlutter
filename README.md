@@ -38,8 +38,9 @@ You can see an example usage in example folder.
 
 ## For stockfish chess engine developpers
 
-Don't forget to run command `dart run ffigen --config ffigen.yaml`.
-More on https://pub.dev/packages/ffigen.
+1. Run `flutter pub get`.
+2. Don't forget to run command `flutter pub run ffigen --config ffigen.yaml`.
+More on https://pub.dev/packages/ffigen for the prerequesites per OS.
 
 ## Credits
 

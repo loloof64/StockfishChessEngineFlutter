@@ -2,7 +2,12 @@
 
 #include <iostream>
 #include <cstdio>
+#ifdef _WIN32
+#include "unistd.h"
+#include "pipe.h"
+#else
 #include <unistd.h>
+#endif
 
 #include "Stockfish/src/bitboard.h"
 #include "Stockfish/src/endgame.h"
@@ -28,12 +33,13 @@ int main(int, char **);
 
 const char *QUITOK = "quitok\n";
 int pipes[NUM_PIPES][2];
+int parentReadPipeHandle, parentWritePipeHandle;
 char buffer[80];
 
 int stockfish_init()
 {
-  pipe(pipes[PARENT_READ_PIPE]);
-  pipe(pipes[PARENT_WRITE_PIPE]);
+  parentReadPipeHandle = pipe(pipes[PARENT_READ_PIPE]);
+  parentWritePipeHandle = pipe(pipes[PARENT_WRITE_PIPE]);
 
   return 0;
 }
