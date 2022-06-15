@@ -6,6 +6,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:isolate';
+import 'dart:developer' as developer;
 
 import 'package:flutter/foundation.dart';
 import 'package:ffi/ffi.dart';
@@ -52,7 +53,7 @@ class Stockfish {
       if (message is String) {
         _stdoutController.sink.add(message);
       } else {
-        debugPrint('[stockfish] The stdout isolate sent $message');
+        developer.log('The stdout isolate sent $message', name: 'Stockfish');
       }
     });
     compute(_spawnIsolates, [_mainPort.sendPort, _stdoutPort.sendPort]).then(
@@ -64,7 +65,8 @@ class Stockfish {
         }
       },
       onError: (error) {
-        debugPrint('[stockfish] The init isolate encountered an error $error');
+        developer.log('The init isolate encountered an error $error',
+            name: 'Stockfish');
         _cleanUp(1);
       },
     );
@@ -154,7 +156,7 @@ void _isolateMain(SendPort mainPort) {
   final exitCode = _bindings.stockfish_main();
   mainPort.send(exitCode);
 
-  debugPrint('[stockfish] nativeMain returns $exitCode');
+  developer.log('nativeMain returns $exitCode', name: 'Stockfish');
 }
 
 void _isolateStdout(SendPort stdoutPort) {
@@ -164,7 +166,7 @@ void _isolateStdout(SendPort stdoutPort) {
     final pointer = _bindings.stockfish_stdout_read();
 
     if (pointer.address == 0) {
-      debugPrint('[stockfish] nativeStdoutRead returns NULL');
+      developer.log('nativeStdoutRead returns NULL', name: 'Stockfish');
       return;
     }
 
@@ -190,21 +192,21 @@ void _isolateStdout(SendPort stdoutPort) {
 Future<bool> _spawnIsolates(List<SendPort> mainAndStdout) async {
   final initResult = _bindings.stockfish_init();
   if (initResult != 0) {
-    debugPrint('[stockfish] initResult=$initResult');
+    developer.log('initResult=$initResult', name: 'Stockfish');
     return false;
   }
 
   try {
     await Isolate.spawn(_isolateStdout, mainAndStdout[1]);
   } catch (error) {
-    debugPrint('[stockfish] Failed to spawn stdout isolate: $error');
+    developer.log('Failed to spawn stdout isolate: $error', name: 'Stockfish');
     return false;
   }
 
   try {
     await Isolate.spawn(_isolateMain, mainAndStdout[0]);
   } catch (error) {
-    debugPrint('[stockfish] Failed to spawn main isolate: $error');
+    developer.log('Failed to spawn main isolate: $error', name: 'Stockfish');
     return false;
   }
 

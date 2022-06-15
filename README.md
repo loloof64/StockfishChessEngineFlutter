@@ -11,7 +11,7 @@ final stockfish = new Stockfish()
 
 // Create a subscribtion on stdout : subscription that you'll have to cancel before disposing Stockfish.
 final stockfishSubscription = stockfish.stdout.listen((message) {
-    debugPrint(message);
+    print(message);
 });
 
 // Get Stockfish ready

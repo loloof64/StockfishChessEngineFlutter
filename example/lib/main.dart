@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
@@ -43,7 +44,7 @@ class MyAppState extends State<MyApp> {
   }
 
   void _readStockfishOutput(String output) {
-    debugPrint(output);
+    developer.log(output);
     // At least now, stockfish is ready : update UI.
     setState(() {});
     if (output.startsWith('bestmove')) {
@@ -77,7 +78,7 @@ class MyAppState extends State<MyApp> {
   void _computeNextMove() {
     if (!_validPosition()) {
       final message = 'Illegal position: ${_fenController.text.trim()} !';
-      debugPrint(message);
+      developer.log(message);
       return;
     }
     _stockfish.stdin = 'position fen ${_fenController.text.trim()}';
