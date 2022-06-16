@@ -1,6 +1,5 @@
 #if _WIN32
 #include <BaseTsd.h>
-typedef SSIZE_T ssize_t;
 #else
 #include <stdint.h>
 #endif
