@@ -1,4 +1,4 @@
-# Run with `dart run ffigen --config ffigen.yaml`.
+# Run with `flutter pub run ffigen --config ffigen_linux.yaml`.
 name: StockfishChessEngineBindings
 description: |
   Bindings for `src/stockfish.h`.

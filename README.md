@@ -39,8 +39,10 @@ You can see an example usage in example folder.
 ## For stockfish chess engine developpers
 
 1. Run `flutter pub get`.
-2. Don't forget to run command `flutter pub run ffigen --config ffigen.yaml`.
+2. Uncomment line `#define _ffigen` on top of src/stockfish.h (for the ffi generation to pass).
+3. Run command `flutter pub run ffigen --config ffigen.yaml`.
 More on https://pub.dev/packages/ffigen for the prerequesites per OS.
+4. Comment line `#define _ffigen` in src/stockfish.h (otherwise Stockfish engine compilation will pass but be incorrect).
 
 ## Credits
 

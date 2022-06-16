@@ -1,3 +1,5 @@
+//#define _ffigen
+
 #if _WIN32
 #include <BaseTsd.h>
 #else
@@ -22,7 +24,7 @@
 // A very short-lived native function.
 //
 // Initialisation of Stockfish.
-#ifdef _cplusplus
+#ifndef _ffigen
 extern "C"
 #endif
 FFI_PLUGIN_EXPORT int stockfish_init();
@@ -30,7 +32,7 @@ FFI_PLUGIN_EXPORT int stockfish_init();
 // A longer lived native function, which occupies the thread calling it.
 //
 // Stockfish main loop.
-#ifdef _cplusplus
+#ifndef _ffigen
 extern "C"
 #endif
 FFI_PLUGIN_EXPORT int stockfish_main();
@@ -38,7 +40,7 @@ FFI_PLUGIN_EXPORT int stockfish_main();
 // A very short-lived native function.
 //
 // Writing to Stockfish STDIN.
-#ifdef _cplusplus
+#ifndef _ffigen
 extern "C"
 #endif
 FFI_PLUGIN_EXPORT ssize_t stockfish_stdin_write(char *data);
@@ -46,7 +48,7 @@ FFI_PLUGIN_EXPORT ssize_t stockfish_stdin_write(char *data);
 // A very short-lived native function.
 //
 // Reading Stockfish STDOUT
-#ifdef _cplusplus
+#ifndef _ffigen
 extern "C"
 #endif
 FFI_PLUGIN_EXPORT char * stockfish_stdout_read();
