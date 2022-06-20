@@ -636,8 +636,17 @@ void init(int argc, char* argv[]) {
     (void)argc;
     string pathSeparator;
 
-    // extract the path+name of the executable binary
-    argv0 = argv[0];
+    #ifdef _WIN32
+      // https://stackoverflow.com/a/13310600/662618
+      #define MAXPATH 150
+      char path[MAX_PATH];
+      HMODULE hModule = GetModuleHandle(NULL);
+      GetModuleFileNameA(hModule, path, (sizeof(path)+1));
+      argv0 = path;
+    #else
+      // extract the path+name of the executable binary
+      argv0 = argv[0];
+    #endif
 
 #ifdef _WIN32
     pathSeparator = "\\";
@@ -661,7 +670,8 @@ void init(int argc, char* argv[]) {
 
     // extract the binary directory path from argv0
     binaryDirectory = argv0;
-    size_t pos = binaryDirectory.find_last_of("\\/");
+
+    size_t pos = binaryDirectory.find_last_of(pathSeparator);
     if (pos == std::string::npos)
         binaryDirectory = "." + pathSeparator;
     else
@@ -670,6 +680,7 @@ void init(int argc, char* argv[]) {
     // pattern replacement: "./" at the start of path is replaced by the working directory
     if (binaryDirectory.find("." + pathSeparator) == 0)
         binaryDirectory.replace(0, 1, workingDirectory);
+
 }
 
 

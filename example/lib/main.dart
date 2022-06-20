@@ -101,6 +101,8 @@ class MyAppState extends State<MyApp> {
     _stockfishOutputSubsciption =
         _stockfish.stdout.listen(_readStockfishOutput);
     await Future.delayed(const Duration(milliseconds: 1100));
+    _stockfish.stdin = 'uci';
+    await Future.delayed(const Duration(milliseconds: 1100));
     _stockfish.stdin = 'isready';
   }
 

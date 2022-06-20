@@ -78,6 +78,7 @@ namespace Eval {
         return;
 
     string eval_file = string(Options["EvalFile"]);
+
     if (eval_file.empty())
         eval_file = EvalFileDefaultName;
 

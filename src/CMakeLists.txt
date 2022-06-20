@@ -4,8 +4,9 @@
 cmake_minimum_required(VERSION 3.22)
 
 project(stockfish VERSION 0.0.1 LANGUAGES CXX)
-set(CMAKE_CXX_STANDARD 17)
 file(GLOB_RECURSE cppPaths "Stockfish/src/*.cpp")
+set(CMAKE_CXX_STANDARD 17)
+set(NNUE_NAME nn-3c0aa92af1da.nnue)
 
 add_library(stockfish SHARED
   "stockfish.cpp"
@@ -19,4 +20,12 @@ set_target_properties(stockfish PROPERTIES
 
 target_compile_definitions(stockfish PUBLIC DART_SHARED_LIB)
 
-file(DOWNLOAD https://tests.stockfishchess.org/api/nn/nn-3c0aa92af1da.nnue ${CMAKE_BINARY_DIR}/nn-3c0aa92af1da.nnue)
+if (MSVC)
+    if (CMAKE_BUILD_TYPE MATCHES DEBUG)
+      file(DOWNLOAD https://tests.stockfishchess.org/api/nn/${NNUE_NAME} ${CMAKE_BINARY_DIR}/runner/Debug/${NNUE_NAME})
+    else (CMAKE_BUILD_TYPE MATCHES DEBUG)
+      file(DOWNLOAD https://tests.stockfishchess.org/api/nn/${NNUE_NAME} ${CMAKE_BINARY_DIR}/runner/Release/${NNUE_NAME})
+    endif (CMAKE_BUILD_TYPE MATCHES DEBUG)
+else (MSVC)
+    file(DOWNLOAD https://tests.stockfishchess.org/api/nn/${NNUE_NAME} ${CMAKE_BINARY_DIR}/${NNUE_NAME})
+endif (MSVC)
