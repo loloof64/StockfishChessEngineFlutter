@@ -1,8 +1,16 @@
 #include <iostream>
 #include <cstdio>
 #ifdef _WIN32
-#include "unistd.h"
 #include <fcntl.h>
+#include <io.h>
+#define STDIN_FILENO 0
+#define STDOUT_FILENO 1
+#define STDERR_FILENO 2
+#ifdef _WIN64
+#define ssize_t __int64
+#else
+#define ssize_t long
+#endif
 #else
 #include <unistd.h>
 #endif
@@ -40,8 +48,8 @@ int stockfish_init()
   #ifdef _WIN32
   unsigned int pipeSize = 1024;
   int textMode = _O_TEXT;
-  pipe(pipes[PARENT_READ_PIPE], pipeSize, textMode);
-  pipe(pipes[PARENT_WRITE_PIPE], pipeSize, textMode);
+  _pipe(pipes[PARENT_READ_PIPE], pipeSize, textMode);
+  _pipe(pipes[PARENT_WRITE_PIPE], pipeSize, textMode);
   #else
   pipe(pipes[PARENT_READ_PIPE]);
   pipe(pipes[PARENT_WRITE_PIPE]);

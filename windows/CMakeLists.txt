@@ -1,13 +1,12 @@
 # The Flutter tooling requires that developers have a version of Visual Studio
-# installed that includes CMake 3.14 or later. You should not increase this
+# installed that includes CMake 3.22 or later. You should not increase this
 # version, as doing so will cause the plugin to fail to compile for some
 # customers of the plugin.
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.22)
 
 # Project-level configuration.
 set(PROJECT_NAME "stockfish")
 project(${PROJECT_NAME} LANGUAGES CXX)
-set(CMAKE_CXX_STANDARD 17)
 
 # Invoke the build for native code shared with the other target platforms.
 # This can be changed to accomodate different builds.

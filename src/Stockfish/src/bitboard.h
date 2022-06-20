@@ -19,9 +19,10 @@
 #ifndef BITBOARD_H_INCLUDED
 #define BITBOARD_H_INCLUDED
 
-#include <string>
 
+#include <string>
 #include "types.h"
+#include "../../fix_minmax.h"
 
 namespace Stockfish {
 
