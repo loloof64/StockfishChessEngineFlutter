@@ -60,8 +60,13 @@ int stockfish_init()
 
 int stockfish_main()
 {
+  #ifdef _WIN32
+  _dup2(CHILD_READ_FD, STDIN_FILENO);
+  _dup2(CHILD_WRITE_FD, STDOUT_FILENO);
+  #else
   dup2(CHILD_READ_FD, STDIN_FILENO);
   dup2(CHILD_WRITE_FD, STDOUT_FILENO);
+  #endif
 
   int argc = 1;
   char *argv[] = {(char *) ""};
@@ -74,12 +79,21 @@ int stockfish_main()
 
 ssize_t stockfish_stdin_write(char *data)
 {
+  #ifdef _WIN32
+  return _write(PARENT_WRITE_FD, data, strlen(data));
+  #else
   return write(PARENT_WRITE_FD, data, strlen(data));
+  #endif
 }
 
 char *stockfish_stdout_read()
 {
+  #ifdef _WIN32
+  ssize_t count = _read(PARENT_READ_FD, buffer, sizeof(buffer) - 1);
+  #else
   ssize_t count = read(PARENT_READ_FD, buffer, sizeof(buffer) - 1);
+  #endif
+  
   if (count < 0)
   {
     return NULL;

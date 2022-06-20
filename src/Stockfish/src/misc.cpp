@@ -626,6 +626,12 @@ string argv0;            // path+name of the executable binary, as given by argv
 string binaryDirectory;  // path of the executable directory
 string workingDirectory; // path of the working directory
 
+// https://stackoverflow.com/a/42844629/662618
+bool endsWith(std::string_view str, std::string_view suffix)
+{
+    return str.size() >= suffix.size() && 0 == str.compare(str.size()-suffix.size(), suffix.size(), suffix);
+}
+
 void init(int argc, char* argv[]) {
     (void)argc;
     string pathSeparator;
@@ -636,11 +642,11 @@ void init(int argc, char* argv[]) {
 #ifdef _WIN32
     pathSeparator = "\\";
   #ifdef _MSC_VER
-    // Under windows argv[0] may not have the extension. Also _get_pgmptr() had
-    // issues in some windows 10 versions, so check returned values carefully.
-    char* pgmptr = nullptr;
-    if (!_get_pgmptr(&pgmptr) && pgmptr != nullptr && *pgmptr)
-        argv0 = pgmptr;
+    // Under windows argv[0] may not have the extension.
+    if (!endsWith(argv0, ".exe")) {
+      argv0 += ".exe";
+    }
+  
   #endif
 #else
     pathSeparator = "/";
