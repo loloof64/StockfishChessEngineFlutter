@@ -31,9 +31,7 @@ class MyAppState extends State<MyApp> {
 
   @override
   void initState() {
-    _stockfish = Stockfish();
-    _stockfishOutputSubsciption =
-        _stockfish.stdout.listen(_readStockfishOutput);
+    _doStartStockfish();
     super.initState();
   }
 
@@ -110,7 +108,7 @@ class MyAppState extends State<MyApp> {
     });
     await Future.delayed(const Duration(milliseconds: 1100));
     _stockfish.stdin = 'uci';
-    await Future.delayed(const Duration(milliseconds: 1100));
+    await Future.delayed(const Duration(milliseconds: 3000));
     _stockfish.stdin = 'isready';
   }
 

@@ -41,7 +41,7 @@ int main(int, char **);
 
 const char *QUITOK = "quitok\n";
 int pipes[NUM_PIPES][2];
-char buffer[80];
+char buffer[1025];
 
 int stockfish_init()
 {
