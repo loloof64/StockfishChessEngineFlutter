@@ -41,12 +41,12 @@ int main(int, char **);
 
 const char *QUITOK = "quitok\n";
 int pipes[NUM_PIPES][2];
-char buffer[1025];
+char buffer[80];
 
 int stockfish_init()
 {
   #ifdef _WIN32
-  unsigned int pipeSize = 1024;
+  unsigned int pipeSize = 80;
   int textMode = _O_TEXT;
   _pipe(pipes[PARENT_READ_PIPE], pipeSize, textMode);
   _pipe(pipes[PARENT_WRITE_PIPE], pipeSize, textMode);

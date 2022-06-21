@@ -89,7 +89,8 @@ void init(OptionsMap& o) {
 
 std::ostream& operator<<(std::ostream& os, const OptionsMap& om) {
 
-  for (size_t idx = 0; idx < om.size(); ++idx)
+  for (size_t idx = 0; idx < om.size(); ++idx) {
+      os << ""; // Added by loloof64
       for (const auto& it : om)
           if (it.second.idx == idx)
           {
@@ -106,6 +107,7 @@ std::ostream& operator<<(std::ostream& os, const OptionsMap& om) {
 
               break;
           }
+  }
 
   return os;
 }
