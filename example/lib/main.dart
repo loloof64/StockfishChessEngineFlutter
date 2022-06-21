@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer' as developer;
 
 import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +27,7 @@ class MyAppState extends State<MyApp> {
   late StreamSubscription _stockfishOutputSubsciption;
   var _timeMs = 1000.0;
   var _nextMove = '';
+  var _stockfishOutputText = '';
 
   @override
   void initState() {
@@ -44,9 +44,10 @@ class MyAppState extends State<MyApp> {
   }
 
   void _readStockfishOutput(String output) {
-    developer.log(output);
     // At least now, stockfish is ready : update UI.
-    setState(() {});
+    setState(() {
+      _stockfishOutputText += "$output\n";
+    });
     if (output.startsWith('bestmove')) {
       final parts = output.split(' ');
       setState(() {
@@ -57,7 +58,6 @@ class MyAppState extends State<MyApp> {
 
   void _pasteFen() {
     FlutterClipboard.paste().then((value) {
-      // Do what ever you want with the value.
       setState(() {
         _fenController.text = value;
       });
@@ -77,10 +77,15 @@ class MyAppState extends State<MyApp> {
 
   void _computeNextMove() {
     if (!_validPosition()) {
-      final message = 'Illegal position: ${_fenController.text.trim()} !';
-      developer.log(message);
+      final message = "Illegal position: '${_fenController.text.trim()}' !\n";
+      setState(() {
+        _stockfishOutputText = message;
+      });
       return;
     }
+    setState(() {
+      _stockfishOutputText = '';
+    });
     _stockfish.stdin = 'position fen ${_fenController.text.trim()}';
     _stockfish.stdin = 'go movetime ${_timeMs.toInt()}';
   }
@@ -100,6 +105,9 @@ class MyAppState extends State<MyApp> {
     _stockfish = Stockfish();
     _stockfishOutputSubsciption =
         _stockfish.stdout.listen(_readStockfishOutput);
+    setState(() {
+      _stockfishOutputText = '';
+    });
     await Future.delayed(const Duration(milliseconds: 1100));
     _stockfish.stdin = 'uci';
     await Future.delayed(const Duration(milliseconds: 1100));
@@ -181,6 +189,26 @@ class MyAppState extends State<MyApp> {
                     child: const Text('Stop Stockfish'),
                   ),
                 ],
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  width: 850.0,
+                  height: 300.0,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      width: 2.0,
+                    ),
+                    borderRadius: const BorderRadius.all(
+                      Radius.circular(8.0),
+                    ),
+                  ),
+                  child: SingleChildScrollView(
+                    child: Text(
+                      _stockfishOutputText,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
