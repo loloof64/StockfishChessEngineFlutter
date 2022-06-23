@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 #include <cstdio>
 #ifdef _WIN32
 #include <fcntl.h>
@@ -15,6 +16,7 @@
 #include <unistd.h>
 #endif
 
+#include "stockfish_main.h"
 #include "stockfish.h"
 
 #include "Stockfish/src/bitboard.h"
@@ -37,13 +39,11 @@
 #define CHILD_READ_FD (pipes[PARENT_WRITE_PIPE][READ_FD])
 #define CHILD_WRITE_FD (pipes[PARENT_READ_PIPE][WRITE_FD])
 
-int main(int, char **);
-
 const char *QUITOK = "quitok\n";
 int pipes[NUM_PIPES][2];
 char buffer[80];
 
-int stockfish_init()
+void stockfish_init()
 {
   #ifdef _WIN32
   unsigned int pipeSize = 80;
@@ -55,11 +55,6 @@ int stockfish_init()
   pipe(pipes[PARENT_WRITE_PIPE]);
   #endif
 
-  return 0;
-}
-
-int stockfish_main()
-{
   #ifdef _WIN32
   _dup2(CHILD_READ_FD, STDIN_FILENO);
   _dup2(CHILD_WRITE_FD, STDOUT_FILENO);
@@ -68,22 +63,19 @@ int stockfish_main()
   dup2(CHILD_WRITE_FD, STDOUT_FILENO);
   #endif
 
-  int argc = 1;
-  char *argv[] = {(char *) ""};
-  int exitCode = main(argc, argv);
-
-  std::cout << QUITOK << std::flush;
-
-  return exitCode;
+  main_init();
 }
 
-ssize_t stockfish_stdin_write(char *data)
+void stockfish_release() 
 {
-  #ifdef _WIN32
-  return _write(PARENT_WRITE_FD, data, strlen(data));
-  #else
-  return write(PARENT_WRITE_FD, data, strlen(data));
-  #endif
+  main_end();
+  std::cout << QUITOK << std::flush;
+}
+
+void stockfish_process_command(char *command)
+{
+  std::string command_as_string(command);
+  processCommand(command_as_string);
 }
 
 char *stockfish_stdout_read()

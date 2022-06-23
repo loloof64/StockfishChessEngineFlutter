@@ -21,14 +21,23 @@
 
 #include <map>
 #include <string>
+#include <sstream>
 
 #include "types.h"
+#include "position.h"
 
 namespace Stockfish {
 
 class Position;
 
 namespace UCI {
+
+  void position(Position& pos, std::istringstream& is, StateListPtr& states);
+  void trace_eval(Position& pos);
+  void setoption(std::istringstream& is);
+  void go(Position& pos, std::istringstream& is, StateListPtr& states);
+  void bench(Position& pos, std::istream& args, StateListPtr& states);
+  int win_rate_model(Value v, int ply);
 
 class Option;
 

@@ -51,6 +51,12 @@ More on https://pub.dev/packages/ffigen for the prerequesites per OS.
 3. Modify the reference name in `evaluate.h` in the line containing `#define EvalFileDefaultName   `, by setting your nnue file name, with the quotes of course.
 4. Don't forget to clean project before building again (`flutter clean` then `flutter pub get`).
 
+### Upgrading Stockfish version
+
+1. Replace the content of src/Stockfish with the new Stockfish source files.
+2. Update the functions in stockfish_main.h and stockfish_main.cpp basing on the main.cpp (main function) and uci.cpp (loop function) from Stockfish sources.
+3. You may need to modify uci.h and uci.cpp from Stockfish sources in order to make the compilation pass.
+
 ## Credits
 
 * Using source code from [Stockfish](https://stockfishchess.org).

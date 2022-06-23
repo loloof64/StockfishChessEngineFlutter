@@ -1,4 +1,4 @@
-//#define _ffigen
+// #define _ffigen
 
 #ifdef _WIN32
 #include <BaseTsd.h>
@@ -25,19 +25,19 @@
 #ifndef _ffigen
 extern "C"
 #endif
-FFI_PLUGIN_EXPORT int stockfish_init();
+FFI_PLUGIN_EXPORT void stockfish_init();
 
-// Stockfish main loop.
+// Release of Stockfish.
 #ifndef _ffigen
 extern "C"
 #endif
-FFI_PLUGIN_EXPORT int stockfish_main();
+FFI_PLUGIN_EXPORT void stockfish_release();
 
-// Writing to Stockfish STDIN.
+// Stockfish command processing.
 #ifndef _ffigen
 extern "C"
 #endif
-FFI_PLUGIN_EXPORT ssize_t stockfish_stdin_write(char *data);
+FFI_PLUGIN_EXPORT void stockfish_process_command(char *command);
 
 // Reading Stockfish STDOUT
 #ifndef _ffigen

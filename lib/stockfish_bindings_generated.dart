@@ -26,35 +26,36 @@ class StockfishChessEngineBindings {
           lookup)
       : _lookup = lookup;
 
-  int stockfish_init() {
+  void stockfish_init() {
     return _stockfish_init();
   }
 
   late final _stockfish_initPtr =
-      _lookup<ffi.NativeFunction<ffi.Int Function()>>('stockfish_init');
-  late final _stockfish_init = _stockfish_initPtr.asFunction<int Function()>();
+      _lookup<ffi.NativeFunction<ffi.Void Function()>>('stockfish_init');
+  late final _stockfish_init = _stockfish_initPtr.asFunction<void Function()>();
 
-  int stockfish_main() {
-    return _stockfish_main();
+  void stockfish_release() {
+    return _stockfish_release();
   }
 
-  late final _stockfish_mainPtr =
-      _lookup<ffi.NativeFunction<ffi.Int Function()>>('stockfish_main');
-  late final _stockfish_main = _stockfish_mainPtr.asFunction<int Function()>();
+  late final _stockfish_releasePtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function()>>('stockfish_release');
+  late final _stockfish_release =
+      _stockfish_releasePtr.asFunction<void Function()>();
 
-  int stockfish_stdin_write(
-    ffi.Pointer<ffi.Char> data,
+  void stockfish_process_command(
+    ffi.Pointer<ffi.Char> command,
   ) {
-    return _stockfish_stdin_write(
-      data,
+    return _stockfish_process_command(
+      command,
     );
   }
 
-  late final _stockfish_stdin_writePtr =
-      _lookup<ffi.NativeFunction<ssize_t Function(ffi.Pointer<ffi.Char>)>>(
-          'stockfish_stdin_write');
-  late final _stockfish_stdin_write = _stockfish_stdin_writePtr
-      .asFunction<int Function(ffi.Pointer<ffi.Char>)>();
+  late final _stockfish_process_commandPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Char>)>>(
+          'stockfish_process_command');
+  late final _stockfish_process_command = _stockfish_process_commandPtr
+      .asFunction<void Function(ffi.Pointer<ffi.Char>)>();
 
   ffi.Pointer<ffi.Char> stockfish_stdout_read() {
     return _stockfish_stdout_read();
@@ -66,6 +67,3 @@ class StockfishChessEngineBindings {
   late final _stockfish_stdout_read =
       _stockfish_stdout_readPtr.asFunction<ffi.Pointer<ffi.Char> Function()>();
 }
-
-typedef ssize_t = __ssize_t;
-typedef __ssize_t = ffi.Long;

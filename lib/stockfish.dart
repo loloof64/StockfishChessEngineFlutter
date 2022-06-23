@@ -40,15 +40,11 @@ class Stockfish {
 
   final _state = _StockfishState();
   final _stdoutController = StreamController<String>.broadcast();
-  final _mainPort = ReceivePort();
   final _stdoutPort = ReceivePort();
 
-  late StreamSubscription _mainSubscription;
   late StreamSubscription _stdoutSubscription;
 
   Stockfish._({this.completer}) {
-    _mainSubscription =
-        _mainPort.listen((message) => _cleanUp(message is int ? message : 1));
     _stdoutSubscription = _stdoutPort.listen((message) {
       if (message is String) {
         _stdoutController.sink.add(message);
@@ -56,7 +52,7 @@ class Stockfish {
         developer.log('The stdout isolate sent $message', name: 'Stockfish');
       }
     });
-    compute(_spawnIsolates, [_mainPort.sendPort, _stdoutPort.sendPort]).then(
+    compute(_spawnIsolate, _stdoutPort.sendPort).then(
       (success) {
         final state = success ? StockfishState.ready : StockfishState.error;
         _state._setValue(state);
@@ -102,7 +98,7 @@ class Stockfish {
 
     final unicodePointer = '$line\n'.toNativeUtf8();
     final pointer = unicodePointer.cast<Char>();
-    _bindings.stockfish_stdin_write(pointer);
+    _bindings.stockfish_process_command(pointer);
     calloc.free(unicodePointer);
   }
 
@@ -114,7 +110,6 @@ class Stockfish {
   void _cleanUp(int exitCode) {
     _stdoutController.close();
 
-    _mainSubscription.cancel();
     _stdoutSubscription.cancel();
 
     _state._setValue(
@@ -152,16 +147,10 @@ class _StockfishState extends ChangeNotifier
   }
 }
 
-void _isolateMain(SendPort mainPort) {
-  final exitCode = _bindings.stockfish_main();
-  mainPort.send(exitCode);
-
-  developer.log('nativeMain returns $exitCode', name: 'Stockfish');
-}
-
 void _isolateStdout(SendPort stdoutPort) {
   String previous = '';
 
+  outerLoop:
   while (true) {
     final pointer = _bindings.stockfish_stdout_read();
 
@@ -185,28 +174,22 @@ void _isolateStdout(SendPort stdoutPort) {
     previous = lines.removeLast();
     for (final line in lines) {
       stdoutPort.send(line);
+      if (line.trim() == "quit") {
+        break outerLoop;
+      }
     }
   }
+
+  _bindings.stockfish_release();
 }
 
-Future<bool> _spawnIsolates(List<SendPort> mainAndStdout) async {
-  final initResult = _bindings.stockfish_init();
-  if (initResult != 0) {
-    developer.log('initResult=$initResult', name: 'Stockfish');
-    return false;
-  }
+Future<bool> _spawnIsolate(SendPort stdout) async {
+  _bindings.stockfish_init();
 
   try {
-    await Isolate.spawn(_isolateStdout, mainAndStdout[1]);
+    await Isolate.spawn(_isolateStdout, stdout);
   } catch (error) {
     developer.log('Failed to spawn stdout isolate: $error', name: 'Stockfish');
-    return false;
-  }
-
-  try {
-    await Isolate.spawn(_isolateMain, mainAndStdout[0]);
-  } catch (error) {
-    developer.log('Failed to spawn main isolate: $error', name: 'Stockfish');
     return false;
   }
 

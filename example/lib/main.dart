@@ -89,10 +89,10 @@ class MyAppState extends State<MyApp> {
   }
 
   void _stopStockfish() async {
-    if (_stockfish.state.value == StockfishState.disposed ||
+    /*if (_stockfish.state.value == StockfishState.disposed ||
         _stockfish.state.value == StockfishState.error) {
       return;
-    }
+    }*/
     _stockfishOutputSubsciption.cancel();
     _stockfish.stdin = 'quit';
     await Future.delayed(const Duration(milliseconds: 200));

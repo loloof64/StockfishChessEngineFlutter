@@ -32,24 +32,24 @@
 #include "uci.h"
 #include "syzygy/tbprobe.h"
 
-using namespace std;
 
 namespace Stockfish {
 
+using namespace std;
+
 extern vector<string> setup_bench(const Position&, istream&);
 
-namespace {
+// namespace {
 
   // FEN string of the initial position, normal chess
   const char* StartFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
 
   // position() is called when engine receives the "position" UCI command.
   // The function sets up the position described in the given FEN string ("fen")
   // or the starting position ("startpos") and then makes the moves given in the
   // following move list ("moves").
 
-  void position(Position& pos, istringstream& is, StateListPtr& states) {
+  void UCI::position(Position& pos, istringstream& is, StateListPtr& states) {
 
     Move m;
     string token, fen;
@@ -81,7 +81,7 @@ namespace {
   // trace_eval() prints the evaluation for the current position, consistent with the UCI
   // options set so far.
 
-  void trace_eval(Position& pos) {
+  void UCI::trace_eval(Position& pos) {
 
     StateListPtr states(new std::deque<StateInfo>(1));
     Position p;
@@ -96,7 +96,7 @@ namespace {
   // setoption() is called when engine receives the "setoption" UCI command. The
   // function updates the UCI option ("name") to the given value ("value").
 
-  void setoption(istringstream& is) {
+  void UCI::setoption(istringstream& is) {
 
     string token, name, value;
 
@@ -121,7 +121,7 @@ namespace {
   // the thinking time and other parameters from the input string, then starts
   // the search.
 
-  void go(Position& pos, istringstream& is, StateListPtr& states) {
+  void UCI::go(Position& pos, istringstream& is, StateListPtr& states) {
 
     Search::LimitsType limits;
     string token;
@@ -155,7 +155,7 @@ namespace {
   // a list of UCI commands is setup according to bench parameters, then
   // it is run one by one printing a summary at the end.
 
-  void bench(Position& pos, istream& args, StateListPtr& states) {
+  void UCI::bench(Position& pos, istream& args, StateListPtr& states) {
 
     string token;
     uint64_t num, nodes = 0, cnt = 1;
@@ -199,7 +199,7 @@ namespace {
 
   // The win rate model returns the probability (per mille) of winning given an eval
   // and a game-ply. The model fits rather accurately the LTC fishtest statistics.
-  int win_rate_model(Value v, int ply) {
+  int UCI::win_rate_model(Value v, int ply) {
 
      // The model captures only up to 240 plies, so limit input (and rescale)
      double m = std::min(240, ply) / 64.0;
@@ -219,7 +219,7 @@ namespace {
      return int(0.5 + 1000 / (1 + std::exp((a - x) / b)));
   }
 
-} // namespace
+//} // namespace
 
 
 /// UCI::loop() waits for a command from stdin, parses it and calls the appropriate
