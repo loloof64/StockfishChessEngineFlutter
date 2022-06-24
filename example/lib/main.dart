@@ -4,6 +4,7 @@ import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:chess/chess.dart' as chess_lib;
+import 'package:window_manager/window_manager.dart';
 
 import 'package:stockfish/stockfish.dart';
 import 'package:stockfish/stockfish_state.dart';
@@ -21,7 +22,7 @@ class MyApp extends StatefulWidget {
   MyAppState createState() => MyAppState();
 }
 
-class MyAppState extends State<MyApp> {
+class MyAppState extends State<MyApp> with WindowListener {
   late Stockfish _stockfish;
   final _fenController = TextEditingController();
   late StreamSubscription _stockfishOutputSubsciption;
@@ -31,14 +32,28 @@ class MyAppState extends State<MyApp> {
 
   @override
   void initState() {
+    windowManager.addListener(this);
+    _overrideDefaultCloseHandler();
     _doStartStockfish();
     super.initState();
+  }
+
+  Future<void> _overrideDefaultCloseHandler() async {
+    await windowManager.setPreventClose(true);
+    setState(() {});
   }
 
   @override
   void dispose() {
     _stopStockfish();
     super.dispose();
+  }
+
+  @override
+  void onWindowClose() async {
+    _stopStockfish();
+    await Future.delayed(const Duration(milliseconds: 200));
+    await windowManager.destroy();
   }
 
   void _readStockfishOutput(String output) {
