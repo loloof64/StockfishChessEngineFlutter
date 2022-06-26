@@ -5,9 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:chess/chess.dart' as chess_lib;
 import 'package:window_manager/window_manager.dart';
+import 'package:logger/logger.dart';
 
 import 'package:stockfish/stockfish.dart';
 import 'package:stockfish/stockfish_state.dart';
+
+class MyLogFilter extends LogFilter {
+  @override
+  bool shouldLog(LogEvent event) {
+    return true;
+  }
+}
 
 void main() {
   runApp(const MaterialApp(
@@ -29,6 +37,7 @@ class MyAppState extends State<MyApp> with WindowListener {
   var _timeMs = 1000.0;
   var _nextMove = '';
   var _stockfishOutputText = '';
+  final _logger = Logger(filter: MyLogFilter());
 
   @override
   void initState() {
@@ -53,10 +62,17 @@ class MyAppState extends State<MyApp> with WindowListener {
   void onWindowClose() async {
     _stopStockfish();
     await Future.delayed(const Duration(milliseconds: 200));
+    ////////////////////////////////////
+    _logger.v("Exiting application");
+    ////////////////////////////////////
     await windowManager.destroy();
   }
 
   void _readStockfishOutput(String output) {
+    ///////////////////////////////
+    _logger.v(output);
+    ///////////////////////////////
+
     // At least now, stockfish is ready : update UI.
     setState(() {
       _stockfishOutputText += "$output\n";
