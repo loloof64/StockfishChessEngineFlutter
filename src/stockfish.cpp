@@ -37,16 +37,18 @@
 #define CHILD_READ_FD (pipes[PARENT_WRITE_PIPE][READ_FD])
 #define CHILD_WRITE_FD (pipes[PARENT_READ_PIPE][WRITE_FD])
 
+#define BUFFER_SIZE 100
+
 int main(int, char **);
 
 const char *QUITOK = "quitok\n";
 int pipes[NUM_PIPES][2];
-char buffer[80];
+char buffer[BUFFER_SIZE+1];
 
 int stockfish_init()
 {
   #ifdef _WIN32
-  unsigned int pipeSize = 80;
+  unsigned int pipeSize = BUFFER_SIZE;
   int textMode = _O_TEXT;
   _pipe(pipes[PARENT_READ_PIPE], pipeSize, textMode);
   _pipe(pipes[PARENT_WRITE_PIPE], pipeSize, textMode);

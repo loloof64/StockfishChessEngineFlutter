@@ -48,7 +48,6 @@ dependencies:
       url: https://github.com/davecom/chess.dart
       ref: 9bc48075ecaab3eb3356c26fee4404a362fe5d54
   window_manager: ^0.2.5
-  logger: ^1.1.0
 
 dev_dependencies:
   flutter_test:
