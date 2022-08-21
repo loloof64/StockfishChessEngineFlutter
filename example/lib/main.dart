@@ -24,7 +24,8 @@ class MyApp extends StatefulWidget {
 
 class MyAppState extends State<MyApp> with WindowListener {
   late Stockfish _stockfish;
-  final _fenController = TextEditingController();
+  final _fenController = TextEditingController(
+      text: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
   late StreamSubscription _stockfishOutputSubsciption;
   var _timeMs = 1000.0;
   var _nextMove = '';

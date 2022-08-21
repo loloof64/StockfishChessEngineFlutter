@@ -1,7 +1,7 @@
-# The Flutter tooling requires that developers have CMake 3.22 or later
+# The Flutter tooling requires that developers have CMake 3.18 or later
 # installed. You should not increase this version, as doing so will cause
 # the plugin to fail to compile for some customers of the plugin.
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.18)
 
 project(stockfish VERSION 0.0.1 LANGUAGES CXX)
 file(GLOB_RECURSE cppPaths "Stockfish/src/*.cpp")
