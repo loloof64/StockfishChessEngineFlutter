@@ -31,7 +31,7 @@ You can see an example usage in example folder.
 
 ## Important notes
 
-* You **must** check the position validity before sending it to stdin, otherwise program will crash on illegal position ! And using chess.js is not enough, as it does not check for kings count validity or kings not touching each other, nor the fact that no pawn can be on first/last rank.
+* You **must** check the position validity before sending it to stdin, otherwise program will crash on illegal position ! And using chess.js is not enough, as it does not check for kings count validity or kings not touching each other, nor the fact that no pawn can be on first/last rank. (As a temporary solution, you can use package chess_loloof64).
 
 * As the library creates two isolates, you must dispose Stockfish before perfoming an hot reload / hot restart, and then creating a new Stockfish instance.
 
