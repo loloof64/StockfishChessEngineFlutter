@@ -1,3 +1,7 @@
+## 0.2.0
+
+* Bug fix : the plugin did not load correctly on Linux.
+
 ## 0.1.2
 
 * Updates for static analysis on the server

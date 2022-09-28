@@ -1,6 +1,6 @@
 name: stockfish_chess_engine
 description: Use Stockfish chess engine directly in your Flutter project.
-version: 0.1.2
+version: 0.2.0
 homepage: https://github.com/loloof64/StockfishChessEngineFlutter
 
 environment:
