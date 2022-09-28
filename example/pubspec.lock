@@ -172,7 +172,7 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.10.0"
-  stockfish:
+  stockfish_chess_engine:
     dependency: "direct main"
     description:
       path: ".."

@@ -30,7 +30,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  stockfish:
+  stockfish_chess_engine:
     # When depending on this package from a real application you should use:
     #   stockfish: ^x.y.z
     # See https://dart.dev/tools/pub/dependencies#version-constraints
