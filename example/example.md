@@ -1,3 +1,4 @@
+```dart
 import 'dart:async';
 
 import 'package:clipboard/clipboard.dart';
@@ -6,8 +7,8 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:chess/chess.dart' as chess_lib;
 import 'package:window_manager/window_manager.dart';
 
-import 'package:stockfish/stockfish.dart';
-import 'package:stockfish/stockfish_state.dart';
+import 'package:stockfish_chess_engine/stockfish.dart';
+import 'package:stockfish_chess_engine/stockfish_state.dart';
 
 void main() {
   runApp(const MaterialApp(
@@ -231,3 +232,4 @@ class MyAppState extends State<MyApp> with WindowListener {
     );
   }
 }
+```
