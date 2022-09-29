@@ -14,6 +14,7 @@ import 'stockfish_bindings_generated.dart';
 import 'stockfish_state.dart';
 
 const String _libName = 'stockfish';
+const String _releaseType = kDebugMode ? 'Debug' : 'Release';
 
 /// The dynamic library in which the symbols for [StockfishChessEngineBindings] can be found.
 final DynamicLibrary _dylib = () {
@@ -28,7 +29,8 @@ final DynamicLibrary _dylib = () {
         '${File(Platform.resolvedExecutable).parent.parent.path}/plugins/stockfish_chess_engine/shared/lib$_libName.so');
   }
   if (Platform.isWindows) {
-    return DynamicLibrary.open('$_libName.dll');
+    return DynamicLibrary.open(
+        '${File(Platform.resolvedExecutable).parent.parent.parent.path}/plugins/stockfish_chess_engine/shared/$_releaseType/$_libName.dll');
   }
   throw UnsupportedError('Unknown platform: ${Platform.operatingSystem}');
 }();

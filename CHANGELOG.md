@@ -1,3 +1,7 @@
+## 0.3.0
+
+* Bug fix : the plugin did not load correctly on Windows.
+
 ## 0.2.0
 
 * Bug fix : the plugin did not load correctly on Linux.
