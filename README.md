@@ -38,11 +38,6 @@ You can see an example usage in example folder.
 
 * As the library creates two isolates, you must dispose Stockfish before perfoming an hot reload / hot restart, and then creating a new Stockfish instance.
 
-## Limitation
-
-* You should not use Stockfish package if you're also using a logger package. Logging messages to the console may break the Stockfish package functionality.
-
-
 ## For stockfish chess engine developpers
 
 1. Run `flutter pub get`.

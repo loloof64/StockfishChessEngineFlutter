@@ -1,3 +1,7 @@
+## 0.4.0
+
+* We don't encounter issue when using a logger and this package.
+
 ## 0.3.2
 
 * Update Readme file with an advice to use chess package along with this package.
