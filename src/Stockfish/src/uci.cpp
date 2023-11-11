@@ -274,7 +274,7 @@ void UCI::loop(int argc, char* argv[]) {
     // --- New version
     std::optional<std::string> input = CommandsQueue::getInstance().receive_command_input();
     if (!input.has_value()) {
-        std::this_thread::sleep_for(500ms);
+        std::this_thread::sleep_for(100ms);
         continue;
     }
 

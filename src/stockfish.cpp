@@ -1,5 +1,9 @@
 #include "stockfish.h"
 
+#include <thread>
+#include <chrono>
+#include <optional>
+
 #include "Stockfish/src/bitboard.h"
 #include "Stockfish/src/endgame.h"
 #include "Stockfish/src/position.h"
@@ -16,7 +20,6 @@
 int main(int, char **);
 
 const char *QUITOK = "quitok\n";
-const char EMPTY[] = {'\0'};
 char RESULT[MAX_SIZE+1];
 
 int stockfish_main()
@@ -37,13 +40,18 @@ void stockfish_stdin_write(char *command)
 
 const char *stockfish_stdout_read()
 {
-  auto wrapped_output = CommandsQueue::getInstance().receive_command_output();
-  if (wrapped_output.has_value()) {
-    auto output_str = wrapped_output.value().c_str();
-    strncpy(RESULT, output_str, MAX_SIZE);
-    return RESULT;
+  using namespace std::chrono_literals;
+  std::optional<std::string> output;
+
+  while (true) {
+    output = CommandsQueue::getInstance().receive_command_output();
+    if (output.has_value()) {
+      break;
+    }
+    std::this_thread::sleep_for(100ms);
   }
-  else {
-    return EMPTY;
-  }
+
+  auto output_str = output.value().c_str();
+  strncpy(RESULT, output_str, MAX_SIZE);
+  return RESULT;
 }
