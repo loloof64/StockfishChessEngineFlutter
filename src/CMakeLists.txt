@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(NNUE_NAME nn-ad9b42354671.nnue)
 
 add_library(stockfish SHARED
+  "commands_queue.cpp"
   "stockfish.cpp"
   ${cppPaths}
 )

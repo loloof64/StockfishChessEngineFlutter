@@ -50,6 +50,8 @@ You can see an example usage in example folder.
 3. Run command `flutter pub run ffigen --config ffigen.yaml`.
 More on https://pub.dev/packages/ffigen for the prerequesites per OS.
 4. Comment line `#define _ffigen` in src/stockfish.h (otherwise Stockfish engine compilation will pass but be incorrect).
+5. In the file lib/stockfish_bindings_generated.dart, add the following import line : `import 'package:ffi/ffi.dart';`
+6. In the same file, replace Pointer<ffi.Char> by Pointer<Utf8>
 
 ### Changing the downloaded NNUE file
 

@@ -16,6 +16,11 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/*
+Modified by loloof64
+Replaced sync_cout by calls to CommandsQueue::getInstance().send_command_output()
+*/
+
 #include <algorithm>
 #include <atomic>
 #include <cstdint>
@@ -49,6 +54,8 @@
 #endif
 #include <windows.h>
 #endif
+
+#include "../../../commands_queue.h"
 
 using namespace Stockfish::Tablebases;
 
@@ -1402,7 +1409,12 @@ void Tablebases::init(const std::string& paths) {
         }
     }
 
+    /*
+        Old way by Stockfish developers
+    
     sync_cout << "info string Found " << _TBTables.size() << " tablebases" << sync_endl;
+    */
+    CommandsQueue::getInstance().send_command_output(std::string("info string Found ") + std::to_string(_TBTables.size()) + " tablebases");
 }
 
 // Probe the WDL table for a particular position.

@@ -18,6 +18,11 @@
 
 // Code for calculating NNUE evaluation function
 
+/*
+Modified by loloof64
+Replaced sync_cout by calls to CommandsQueue::getInstance().send_command_output()
+*/
+
 #include <iostream>
 #include <set>
 #include <sstream>
@@ -31,6 +36,8 @@
 #include "../types.h"
 
 #include "evaluate_nnue.h"
+
+#include "../../../commands_queue.h"
 
 namespace Stockfish::Eval::NNUE {
 
@@ -383,7 +390,12 @@ namespace Stockfish::Eval::NNUE {
         {
              msg = "Failed to export a net. A non-embedded net can only be saved if the filename is specified";
 
+              /*
+              Old way by Stockfish developers
+              
              sync_cout << msg << sync_endl;
+              */
+              CommandsQueue::getInstance().send_command_output(msg);
              return false;
         }
         actualFilename = EvalFileDefaultName;
@@ -395,7 +407,12 @@ namespace Stockfish::Eval::NNUE {
     msg = saved ? "Network saved successfully to " + actualFilename
                 : "Failed to export a net";
 
-    sync_cout << msg << sync_endl;
+    /*
+              Old way by Stockfish developers
+              
+             sync_cout << msg << sync_endl;
+              */
+    CommandsQueue::getInstance().send_command_output(msg); 
     return saved;
   }
 

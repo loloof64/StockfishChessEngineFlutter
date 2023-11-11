@@ -16,6 +16,11 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/*
+Modified by loloof64
+Replaced sync_cout by calls to CommandsQueue::getInstance().send_command_output()
+*/
+
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
@@ -36,6 +41,8 @@
 #include "timeman.h"
 #include "uci.h"
 #include "incbin/incbin.h"
+
+#include "../../commands_queue.h"
 
 
 // Macro to embed the default efficiently updatable neural network (NNUE) file
@@ -134,19 +141,38 @@ namespace Eval {
         string msg4 = "The default net can be downloaded from: https://tests.stockfishchess.org/api/nn/" + std::string(EvalFileDefaultName);
         string msg5 = "The engine will be terminated now.";
 
+        /* previous way (by Stockfish authors)
         sync_cout << "info string ERROR: " << msg1 << sync_endl;
         sync_cout << "info string ERROR: " << msg2 << sync_endl;
         sync_cout << "info string ERROR: " << msg3 << sync_endl;
         sync_cout << "info string ERROR: " << msg4 << sync_endl;
         sync_cout << "info string ERROR: " << msg5 << sync_endl;
+        */
+
+        /* new way */
+        CommandsQueue::getInstance().send_command_output(string("info string ERROR: ") + msg1);
+        CommandsQueue::getInstance().send_command_output(string("info string ERROR: ") + msg2);
+        CommandsQueue::getInstance().send_command_output(string("info string ERROR: ") + msg3);
+        CommandsQueue::getInstance().send_command_output(string("info string ERROR: ") + msg4);
+        CommandsQueue::getInstance().send_command_output(string("info string ERROR: ") + msg5);
+        /* end of new way block*/
 
         exit(EXIT_FAILURE);
     }
 
+    /* old way
     if (useNNUE)
         sync_cout << "info string NNUE evaluation using " << eval_file << " enabled" << sync_endl;
     else
         sync_cout << "info string classical evaluation enabled" << sync_endl;
+    */
+
+    // new way
+    if (useNNUE)
+        CommandsQueue::getInstance().send_command_output(string("info string NNUE evaluation using ") + eval_file + " enabled");
+    else
+        CommandsQueue::getInstance().send_command_output(string("info string classical evaluation enabled"));
+    // end of new way block
   }
 }
 

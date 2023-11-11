@@ -16,10 +16,15 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/*
+Modified by loloof64
+*/
+
 #include <algorithm>
 #include <cassert>
 #include <ostream>
 #include <sstream>
+#include <string> // added by loloof64
 
 #include "evaluate.h"
 #include "misc.h"
@@ -28,6 +33,8 @@
 #include "tt.h"
 #include "uci.h"
 #include "syzygy/tbprobe.h"
+
+#include "../../commands_queue.h"
 
 using std::string;
 
@@ -90,7 +97,6 @@ void init(OptionsMap& o) {
 std::ostream& operator<<(std::ostream& os, const OptionsMap& om) {
 
   for (size_t idx = 0; idx < om.size(); ++idx) {
-      os << ""; // Added by loloof64
       for (const auto& it : om)
           if (it.second.idx == idx)
           {
@@ -110,6 +116,28 @@ std::ostream& operator<<(std::ostream& os, const OptionsMap& om) {
   }
 
   return os;
+}
+
+// added by loloof64
+void send_output_string(const OptionsMap& om) {
+    for (size_t idx = 0; idx < om.size(); ++idx) {
+      for (const auto& it : om)
+          if (it.second.idx == idx)
+          {
+              const Option& o = it.second;
+              CommandsQueue::getInstance().send_command_output(string("\noption name ") + it.first + " type " + o.type);
+
+              if (o.type == "string" || o.type == "check" || o.type == "combo")
+                  CommandsQueue::getInstance().send_command_output(string(" default ") + o.defaultValue);
+
+              if (o.type == "spin")
+                  CommandsQueue::getInstance().send_command_output(string(" default " + std::to_string(int(stof(o.defaultValue))) 
+                    + " min " + std::to_string(o.min)
+                    + " max " + std::to_string(o.max)));
+
+              break;
+          }
+    }
 }
 
 

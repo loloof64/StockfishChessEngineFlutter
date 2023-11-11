@@ -16,11 +16,19 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/*
+Modified by loloof64
+In loop(), replace reading commands from stdin
+Replaced sync_cout by calls to CommandsQueue::getInstance().send_command_output()
+*/
+
 #include <cassert>
 #include <cmath>
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <chrono>
+#include <thread>
 
 #include "evaluate.h"
 #include "movegen.h"
@@ -31,6 +39,8 @@
 #include "tt.h"
 #include "uci.h"
 #include "syzygy/tbprobe.h"
+
+#include "../../commands_queue.h"
 
 using namespace std;
 
@@ -89,7 +99,11 @@ namespace {
 
     Eval::NNUE::verify();
 
+    /*
+     Old way by Stockfish developers
     sync_cout << "\n" << Eval::trace(p) << sync_endl;
+    */
+    CommandsQueue::getInstance().send_command_output(string("\n") + Eval::trace(p));
   }
 
 
@@ -113,7 +127,12 @@ namespace {
     if (Options.count(name))
         Options[name] = value;
     else
+        /*
+            old way by Stockfish developers
+
         sync_cout << "No such option: " << name << sync_endl;
+        */
+        CommandsQueue::getInstance().send_command_output(string("No such option: ") + name);
   }
 
 
@@ -229,6 +248,7 @@ namespace {
 /// In addition to the UCI ones, also some additional debug commands are supported.
 
 void UCI::loop(int argc, char* argv[]) {
+  using namespace std::chrono_literals;
 
   Position pos;
   string token, cmd;
@@ -240,13 +260,30 @@ void UCI::loop(int argc, char* argv[]) {
       cmd += std::string(argv[i]) + " ";
 
   do {
+    /* old version by Stockfish authors
       if (argc == 1 && !getline(cin, cmd)) // Block here waiting for input or EOF
           cmd = "quit";
+    
 
       istringstream is(cmd);
 
       token.clear(); // Avoid a stale if getline() returns empty or blank line
       is >> skipws >> token;
+    */
+
+    // --- New version
+    std::optional<std::string> input = CommandsQueue::getInstance().receive_command_input();
+    if (!input.has_value()) {
+        std::this_thread::sleep_for(500ms);
+        continue;
+    }
+
+    auto input_str = *input;
+    istringstream is(input_str);
+
+    token.clear(); // Avoid a stale if getline() returns empty or blank line
+    is >> skipws >> token;
+    // --- End of new version section
 
       if (    token == "quit"
           ||  token == "stop")
@@ -260,23 +297,55 @@ void UCI::loop(int argc, char* argv[]) {
           Threads.main()->ponder = false; // Switch to normal search
 
       else if (token == "uci")
+            /*
+            old way by Stockfish developers
+            
           sync_cout << "id name " << engine_info(true)
                     << "\n"       << Options
                     << "\nuciok"  << sync_endl;
+        */
+
+        // New way
+        {
+          CommandsQueue::getInstance().send_command_output(string("id name ") + engine_info(true)
+              +  "\n"); 
+          send_output_string(Options);
+          CommandsQueue::getInstance().send_command_output(string("\nuciok"));
+        }
+        // End of new way block
 
       else if (token == "setoption")  setoption(is);
       else if (token == "go")         go(pos, is, states);
       else if (token == "position")   position(pos, is, states);
       else if (token == "ucinewgame") Search::clear();
-      else if (token == "isready")    sync_cout << "readyok" << sync_endl;
+      else if (token == "isready")    
+        /*
+            Old way by Stockfish developers
+        
+        sync_cout << "readyok" << sync_endl;
+        */
+        CommandsQueue::getInstance().send_command_output("readyok");
 
       // Additional custom non-UCI commands, mainly for debugging.
       // Do not use these commands during a search!
       else if (token == "flip")     pos.flip();
       else if (token == "bench")    bench(pos, is, states);
-      else if (token == "d")        sync_cout << pos << sync_endl;
+      else if (token == "d")        
+        /* 
+            old way by Stockfish developers
+
+
+        sync_cout << pos << sync_endl;
+    */
+        send_output_string(pos);
       else if (token == "eval")     trace_eval(pos);
-      else if (token == "compiler") sync_cout << compiler_info() << sync_endl;
+      else if (token == "compiler") 
+        /*
+            Old way by Stockfish developers
+
+        sync_cout << compiler_info() << sync_endl;
+        */
+        CommandsQueue::getInstance().send_command_output(compiler_info());
       else if (token == "export_net")
       {
           std::optional<std::string> filename;
@@ -286,8 +355,19 @@ void UCI::loop(int argc, char* argv[]) {
           Eval::NNUE::save_eval(filename);
       }
       else if (!token.empty() && token[0] != '#')
-          sync_cout << "Unknown command: " << cmd << sync_endl;
+            /*
+                Old way by Stockfish developers
 
+          sync_cout << "Unknown command: " << cmd << sync_endl;
+            */
+            CommandsQueue::getInstance().send_command_output(string("Unknown command: ") + cmd);
+
+    /*
+      Old way
+    
+    sync_cout << sync_endl;
+    */
+    CommandsQueue::getInstance().send_command_output(string("\n"));
   } while (token != "quit" && argc == 1); // Command line args are one-shot
 }
 

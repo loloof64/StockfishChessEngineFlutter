@@ -16,6 +16,10 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/*
+    Modified by loloof64
+*/
+
 #include <algorithm>
 #include <cassert>
 #include <cstddef> // For offsetof()
@@ -31,6 +35,8 @@
 #include "tt.h"
 #include "uci.h"
 #include "syzygy/tbprobe.h"
+
+#include "../../commands_queue.h"
 
 using std::string;
 
@@ -91,6 +97,45 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
   }
 
   return os;
+}
+
+// Added by loloof64
+void send_output_string(const Position& pos) {
+  std::stringstream output;
+  output << "\n +---+---+---+---+---+---+---+---+\n";
+
+  for (Rank r = RANK_8; r >= RANK_1; --r)
+  {
+      for (File f = FILE_A; f <= FILE_H; ++f)
+          output << " | " << PieceToChar[pos.piece_on(make_square(f, r))];
+
+      output << " | " << (1 + r) << "\n +---+---+---+---+---+---+---+---+\n";
+  }
+
+  output << "   a   b   c   d   e   f   g   h\n"
+     << "\nFen: " << pos.fen() << "\nKey: " << std::hex << std::uppercase
+     << std::setfill('0') << std::setw(16) << pos.key()
+     << std::setfill(' ') << std::dec << "\nCheckers: ";
+
+  for (Bitboard b = pos.checkers(); b; )
+      output << UCI::square(pop_lsb(b)) << " ";
+
+  if (    int(Tablebases::MaxCardinality) >= popcount(pos.pieces())
+      && !pos.can_castle(ANY_CASTLING))
+  {
+      StateInfo st;
+      ASSERT_ALIGNED(&st, Eval::NNUE::CacheLineSize);
+
+      Position p;
+      p.set(pos.fen(), pos.is_chess960(), &st, pos.this_thread());
+      Tablebases::ProbeState s1, s2;
+      Tablebases::WDLScore wdl = Tablebases::probe_wdl(p, &s1);
+      int dtz = Tablebases::probe_dtz(p, &s2);
+      output << "\nTablebases WDL: " << std::setw(4) << wdl << " (" << s1 << ")"
+         << "\nTablebases DTZ: " << std::setw(4) << dtz << " (" << s2 << ")";
+  }
+
+  CommandsQueue::getInstance().send_command_output(output.str());
 }
 
 

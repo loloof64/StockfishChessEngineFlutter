@@ -16,11 +16,16 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/*
+  Modified by loloof64
+*/
+
 #ifndef UCI_H_INCLUDED
 #define UCI_H_INCLUDED
 
 #include <map>
 #include <string>
+#include <sstream>
 
 #include "types.h"
 
@@ -60,6 +65,7 @@ public:
 
 private:
   friend std::ostream& operator<<(std::ostream&, const OptionsMap&);
+  friend void send_output_string(const OptionsMap&);
 
   std::string defaultValue, currentValue, type;
   int min, max;

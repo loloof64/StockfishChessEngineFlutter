@@ -21,12 +21,6 @@
 #define FFI_PLUGIN_EXPORT __attribute__((visibility("default"))) __attribute__((used))
 #endif
 
-// Initialisation of Stockfish.
-#ifndef _ffigen
-extern "C"
-#endif
-FFI_PLUGIN_EXPORT int stockfish_init();
-
 // Stockfish main loop.
 #ifndef _ffigen
 extern "C"
@@ -37,10 +31,10 @@ FFI_PLUGIN_EXPORT int stockfish_main();
 #ifndef _ffigen
 extern "C"
 #endif
-FFI_PLUGIN_EXPORT ssize_t stockfish_stdin_write(char *data);
+FFI_PLUGIN_EXPORT void stockfish_stdin_write(char *data);
 
 // Reading Stockfish STDOUT
 #ifndef _ffigen
 extern "C"
 #endif
-FFI_PLUGIN_EXPORT char * stockfish_stdout_read();
+FFI_PLUGIN_EXPORT const char* stockfish_stdout_read();

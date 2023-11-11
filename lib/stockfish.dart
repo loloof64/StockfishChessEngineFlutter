@@ -3,7 +3,6 @@
 import 'dart:async';
 import 'dart:ffi';
 import 'dart:io';
-import 'dart:convert';
 import 'dart:isolate';
 import 'dart:developer' as developer;
 
@@ -105,9 +104,8 @@ class Stockfish {
       throw StateError('Stockfish is not ready ($stateValue)');
     }
 
-    final unicodePointer = '$line\n'.toNativeUtf8();
-    final pointer = unicodePointer.cast<Char>();
-    _bindings.stockfish_stdin_write(pointer);
+    final unicodePointer = line.toNativeUtf8();
+    _bindings.stockfish_stdin_write(unicodePointer);
     calloc.free(unicodePointer);
   }
 
@@ -175,17 +173,7 @@ void _isolateStdout(SendPort stdoutPort) {
       return;
     }
 
-    Uint8List newContentCharList;
-
-    final newContentLength = pointer.cast<Utf8>().length;
-    newContentCharList = Uint8List.view(
-        pointer.cast<Uint8>().asTypedList(newContentLength).buffer,
-        0,
-        newContentLength);
-
-    final newContent = utf8.decode(newContentCharList);
-
-    final data = previous + newContent;
+    final data = previous + pointer.toDartString();
     final lines = data.split('\n');
     previous = lines.removeLast();
     for (final line in lines) {
@@ -195,12 +183,6 @@ void _isolateStdout(SendPort stdoutPort) {
 }
 
 Future<bool> _spawnIsolates(List<SendPort> mainAndStdout) async {
-  final initResult = _bindings.stockfish_init();
-  if (initResult != 0) {
-    developer.log('initResult=$initResult', name: 'Stockfish');
-    return false;
-  }
-
   try {
     await Isolate.spawn(_isolateStdout, mainAndStdout[1]);
   } catch (error) {
