@@ -28,14 +28,14 @@ int stockfish_main()
   char *argv[] = {(char *) ""};
   int exitCode = main(argc, argv);
 
-  CommandsQueue::getInstance().send_command_input(QUITOK);
+  InputsQueue::getInstance().send(QUITOK);
 
   return exitCode;
 }
 
 void stockfish_stdin_write(char *command)
 {
-  CommandsQueue::getInstance().send_command_input(std::string(command));
+  InputsQueue::getInstance().send(std::string(command));
 }
 
 const char *stockfish_stdout_read()
@@ -44,11 +44,11 @@ const char *stockfish_stdout_read()
   std::optional<std::string> output;
 
   while (true) {
-    output = CommandsQueue::getInstance().receive_command_output();
+    output = OutputsQueue::getInstance().receive();
     if (output.has_value()) {
       break;
     }
-    std::this_thread::sleep_for(100ms);
+    std::this_thread::sleep_for(500ms);
   }
 
   auto output_str = output.value().c_str();

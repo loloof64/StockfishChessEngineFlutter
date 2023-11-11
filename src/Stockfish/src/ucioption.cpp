@@ -125,13 +125,13 @@ void send_output_string(const OptionsMap& om) {
           if (it.second.idx == idx)
           {
               const Option& o = it.second;
-              CommandsQueue::getInstance().send_command_output(string("\noption name ") + it.first + " type " + o.type);
+              OutputsQueue::getInstance().send(string("\noption name ") + it.first + " type " + o.type);
 
               if (o.type == "string" || o.type == "check" || o.type == "combo")
-                  CommandsQueue::getInstance().send_command_output(string(" default ") + o.defaultValue);
+                  OutputsQueue::getInstance().send(string(" default ") + o.defaultValue);
 
               if (o.type == "spin")
-                  CommandsQueue::getInstance().send_command_output(string(" default " + std::to_string(int(stof(o.defaultValue))) 
+                  OutputsQueue::getInstance().send(string(" default " + std::to_string(int(stof(o.defaultValue))) 
                     + " min " + std::to_string(o.min)
                     + " max " + std::to_string(o.max)));
 

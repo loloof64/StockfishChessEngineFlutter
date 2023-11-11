@@ -18,7 +18,7 @@
 
 /*
 Modified by loloof64
-Replaced sync_cout by calls to CommandsQueue::getInstance().send_command_output()
+Replaced sync_cout by calls to OutputsQueue::getInstance().send()
 */
 
 #include <algorithm>
@@ -150,11 +150,11 @@ namespace Eval {
         */
 
         /* new way */
-        CommandsQueue::getInstance().send_command_output(string("info string ERROR: ") + msg1);
-        CommandsQueue::getInstance().send_command_output(string("info string ERROR: ") + msg2);
-        CommandsQueue::getInstance().send_command_output(string("info string ERROR: ") + msg3);
-        CommandsQueue::getInstance().send_command_output(string("info string ERROR: ") + msg4);
-        CommandsQueue::getInstance().send_command_output(string("info string ERROR: ") + msg5);
+        OutputsQueue::getInstance().send(string("info string ERROR: ") + msg1 + "\n");
+        OutputsQueue::getInstance().send(string("info string ERROR: ") + msg2 + "\n");
+        OutputsQueue::getInstance().send(string("info string ERROR: ") + msg3 + "\n");
+        OutputsQueue::getInstance().send(string("info string ERROR: ") + msg4 + "\n");
+        OutputsQueue::getInstance().send(string("info string ERROR: ") + msg5 + "\n");
         /* end of new way block*/
 
         exit(EXIT_FAILURE);
@@ -169,9 +169,9 @@ namespace Eval {
 
     // new way
     if (useNNUE)
-        CommandsQueue::getInstance().send_command_output(string("info string NNUE evaluation using ") + eval_file + " enabled");
+        OutputsQueue::getInstance().send(string("info string NNUE evaluation using ") + eval_file + " enabled" + "\n");
     else
-        CommandsQueue::getInstance().send_command_output(string("info string classical evaluation enabled"));
+        OutputsQueue::getInstance().send(string("info string classical evaluation enabled") + "\n");
     // end of new way block
   }
 }

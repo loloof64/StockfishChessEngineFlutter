@@ -19,7 +19,7 @@
 /*
 Modified by loloof64
 In loop(), replace reading commands from stdin
-Replaced sync_cout by calls to CommandsQueue::getInstance().send_command_output()
+Replaced sync_cout by calls to OutputsQueue::getInstance().send()
 */
 
 #include <cassert>
@@ -103,7 +103,7 @@ namespace {
      Old way by Stockfish developers
     sync_cout << "\n" << Eval::trace(p) << sync_endl;
     */
-    CommandsQueue::getInstance().send_command_output(string("\n") + Eval::trace(p));
+    OutputsQueue::getInstance().send(string("\n") + Eval::trace(p) + "\n");
   }
 
 
@@ -132,7 +132,7 @@ namespace {
 
         sync_cout << "No such option: " << name << sync_endl;
         */
-        CommandsQueue::getInstance().send_command_output(string("No such option: ") + name);
+        OutputsQueue::getInstance().send(string("No such option: ") + name + string("\n"));
   }
 
 
@@ -272,9 +272,9 @@ void UCI::loop(int argc, char* argv[]) {
     */
 
     // --- New version
-    std::optional<std::string> input = CommandsQueue::getInstance().receive_command_input();
+    std::optional<std::string> input = InputsQueue::getInstance().receive();
     if (!input.has_value()) {
-        std::this_thread::sleep_for(100ms);
+        std::this_thread::sleep_for(300ms);
         continue;
     }
 
@@ -307,10 +307,10 @@ void UCI::loop(int argc, char* argv[]) {
 
         // New way
         {
-          CommandsQueue::getInstance().send_command_output(string("id name ") + engine_info(true)
+          OutputsQueue::getInstance().send(string("id name ") + engine_info(true)
               +  "\n"); 
           send_output_string(Options);
-          CommandsQueue::getInstance().send_command_output(string("\nuciok"));
+          OutputsQueue::getInstance().send(string("\nuciok") + string("\n"));
         }
         // End of new way block
 
@@ -324,7 +324,7 @@ void UCI::loop(int argc, char* argv[]) {
         
         sync_cout << "readyok" << sync_endl;
         */
-        CommandsQueue::getInstance().send_command_output("readyok");
+        OutputsQueue::getInstance().send("readyok\n");
 
       // Additional custom non-UCI commands, mainly for debugging.
       // Do not use these commands during a search!
@@ -345,7 +345,7 @@ void UCI::loop(int argc, char* argv[]) {
 
         sync_cout << compiler_info() << sync_endl;
         */
-        CommandsQueue::getInstance().send_command_output(compiler_info());
+        OutputsQueue::getInstance().send(compiler_info() + string("\n"));
       else if (token == "export_net")
       {
           std::optional<std::string> filename;
@@ -360,14 +360,14 @@ void UCI::loop(int argc, char* argv[]) {
 
           sync_cout << "Unknown command: " << cmd << sync_endl;
             */
-            CommandsQueue::getInstance().send_command_output(string("Unknown command: ") + cmd);
+            OutputsQueue::getInstance().send(string("Unknown command: ") + cmd + string("\n"));
 
     /*
       Old way
     
     sync_cout << sync_endl;
     */
-    CommandsQueue::getInstance().send_command_output(string("\n"));
+    OutputsQueue::getInstance().send(string("\n"));
   } while (token != "quit" && argc == 1); // Command line args are one-shot
 }
 

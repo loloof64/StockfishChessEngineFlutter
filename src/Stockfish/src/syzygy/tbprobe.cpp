@@ -18,7 +18,7 @@
 
 /*
 Modified by loloof64
-Replaced sync_cout by calls to CommandsQueue::getInstance().send_command_output()
+Replaced sync_cout by calls to OutputsQueue::getInstance().send()
 */
 
 #include <algorithm>
@@ -1414,7 +1414,7 @@ void Tablebases::init(const std::string& paths) {
     
     sync_cout << "info string Found " << _TBTables.size() << " tablebases" << sync_endl;
     */
-    CommandsQueue::getInstance().send_command_output(std::string("info string Found ") + std::to_string(_TBTables.size()) + " tablebases");
+    OutputsQueue::getInstance().send(std::string("info string Found ") + std::to_string(_TBTables.size()) + " tablebases\n");
 }
 
 // Probe the WDL table for a particular position.

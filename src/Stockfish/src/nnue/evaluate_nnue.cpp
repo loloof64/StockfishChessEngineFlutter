@@ -20,7 +20,7 @@
 
 /*
 Modified by loloof64
-Replaced sync_cout by calls to CommandsQueue::getInstance().send_command_output()
+Replaced sync_cout by calls to OutputsQueue::getInstance().send()
 */
 
 #include <iostream>
@@ -395,7 +395,7 @@ namespace Stockfish::Eval::NNUE {
               
              sync_cout << msg << sync_endl;
               */
-              CommandsQueue::getInstance().send_command_output(msg);
+              OutputsQueue::getInstance().send(msg + std::string("\n"));
              return false;
         }
         actualFilename = EvalFileDefaultName;
@@ -412,7 +412,7 @@ namespace Stockfish::Eval::NNUE {
               
              sync_cout << msg << sync_endl;
               */
-    CommandsQueue::getInstance().send_command_output(msg); 
+    OutputsQueue::getInstance().send(msg + std::string("\n")); 
     return saved;
   }
 

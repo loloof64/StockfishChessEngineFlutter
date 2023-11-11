@@ -135,7 +135,7 @@ void send_output_string(const Position& pos) {
          << "\nTablebases DTZ: " << std::setw(4) << dtz << " (" << s2 << ")";
   }
 
-  CommandsQueue::getInstance().send_command_output(output.str());
+  OutputsQueue::getInstance().send(output.str());
 }
 
 

@@ -8,10 +8,8 @@
 
 class CommandsQueue {
 private: 
-    std::mutex commands_inputs_mutex_;
-    std::mutex commands_outputs_mutex_;
-    std::deque<std::string> commands_inputs_;
-    std::deque<std::string> commands_outputs_;
+    std::mutex mutex_;
+    std::deque<std::string> values_;
 
 protected:
     CommandsQueue(){}
@@ -20,11 +18,18 @@ protected:
 public:
     CommandsQueue(const CommandsQueue&) = delete;
     CommandsQueue& operator=(const CommandsQueue&) = delete;
-    static CommandsQueue& getInstance();
 
-    void send_command_input(const std::string &command);
-    std::optional<std::string> receive_command_input();
-    void send_command_output(const std::string &output);
-    std::optional<std::string> receive_command_output();
+    void send(const std::string &command);
+    std::optional<std::string> receive();
+};
+
+class OutputsQueue : public CommandsQueue {
+public:
+    static OutputsQueue& getInstance();
+};
+
+class InputsQueue : public CommandsQueue {
+public:
+    static InputsQueue& getInstance();
 };
 #endif

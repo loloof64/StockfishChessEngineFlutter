@@ -18,7 +18,7 @@
 
 /*
 Modified by loloof64
-Replaced sync_cout by calls to CommandsQueue::getInstance().send_command_output()
+Replaced sync_cout by calls to OutputsQueue::getInstance().send()
 */
 
 #include <algorithm>
@@ -158,7 +158,7 @@ namespace {
 
         // New way
         if (Root)
-            CommandsQueue::getInstance().send_command_output(UCI::move(m, pos.is_chess960()) +  ": " + std::to_string(cnt));
+            OutputsQueue::getInstance().send(UCI::move(m, pos.is_chess960()) +  ": " + std::to_string(cnt) + "\n");
         // End of new way block
     }
     return nodes;
@@ -201,7 +201,7 @@ void MainThread::search() {
       Old way by Stockfish developpers
       sync_cout << "\nNodes searched: " << nodes << "\n" << sync_endl;
       */
-      CommandsQueue::getInstance().send_command_output(string("\nNodes searched: ") + std::to_string(nodes) + "\n");
+      OutputsQueue::getInstance().send(string("\nNodes searched: ") + std::to_string(nodes) + "\n\n");
       return;
   }
 
@@ -219,7 +219,7 @@ void MainThread::search() {
                 << UCI::value(rootPos.checkers() ? -VALUE_MATE : VALUE_DRAW)
                 << sync_endl;
       */
-      CommandsQueue::getInstance().send_command_output(string("info depth 0 score ") + UCI::value(rootPos.checkers() ? -VALUE_MATE : VALUE_DRAW));
+      OutputsQueue::getInstance().send(string("info depth 0 score ") + UCI::value(rootPos.checkers() ? -VALUE_MATE : VALUE_DRAW) + "\n");
   }
   else
   {
@@ -277,16 +277,17 @@ void MainThread::search() {
   // New way
 
   if (bestThread != this)
-      CommandsQueue::getInstance().send_command_output(UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE));
+      OutputsQueue::getInstance().send(UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE)+"\n");
 
-  CommandsQueue::getInstance().send_command_output(UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960()));
+  OutputsQueue::getInstance().send(UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960()));
 
   if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
-      CommandsQueue::getInstance().send_command_output(string( " ponder ") + UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960()));
+      OutputsQueue::getInstance().send(string( " ponder ") + UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960()));
 
   // End of new way block
 
-  std::cout << sync_endl;
+  // std::cout << sync_endl;
+  OutputsQueue::getInstance().send("\n");
 }
 
 
@@ -434,7 +435,7 @@ void Thread::search() {
                   /* old way by Stockfish developers
                   sync_cout << UCI::pv(rootPos, rootDepth, alpha, beta) << sync_endl;
                   */
-                  CommandsQueue::getInstance().send_command_output(UCI::pv(rootPos, rootDepth, alpha, beta));
+                  OutputsQueue::getInstance().send(UCI::pv(rootPos, rootDepth, alpha, beta) + "\n");
 
               // In case of failing low/high increase aspiration window and
               // re-search, otherwise exit the loop.
@@ -470,7 +471,7 @@ void Thread::search() {
 
               sync_cout << UCI::pv(rootPos, rootDepth, alpha, beta) << sync_endl;
               */
-            CommandsQueue::getInstance().send_command_output(UCI::pv(rootPos, rootDepth, alpha, beta));
+            OutputsQueue::getInstance().send(UCI::pv(rootPos, rootDepth, alpha, beta) + "\n");
       }
 
       if (!Threads.stop)
@@ -1035,9 +1036,9 @@ moves_loop: // When in check, search starts here
                     << " currmove " << UCI::move(move, pos.is_chess960())
                     << " currmovenumber " << moveCount + thisThread->pvIdx << sync_endl;
         */
-        CommandsQueue::getInstance().send_command_output("info depth " + std::to_string(depth) +
+        OutputsQueue::getInstance().send("info depth " + std::to_string(depth) +
          " currmove " + UCI::move(move, pos.is_chess960())
-         + " currmovenumber " + std::to_string(moveCount + thisThread->pvIdx));
+         + " currmovenumber " + std::to_string(moveCount + thisThread->pvIdx) + "\n");
 
       if (PvNode)
           (ss+1)->pv = nullptr;
