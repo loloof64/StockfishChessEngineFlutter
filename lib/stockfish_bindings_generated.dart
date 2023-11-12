@@ -47,8 +47,8 @@ class StockfishChessEngineBindings {
   late final _stockfish_stdin_writePtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<Utf8>)>>(
           'stockfish_stdin_write');
-  late final _stockfish_stdin_write = _stockfish_stdin_writePtr
-      .asFunction<void Function(ffi.Pointer<Utf8>)>();
+  late final _stockfish_stdin_write =
+      _stockfish_stdin_writePtr.asFunction<void Function(ffi.Pointer<Utf8>)>();
 
   ffi.Pointer<Utf8> stockfish_stdout_read() {
     return _stockfish_stdout_read();

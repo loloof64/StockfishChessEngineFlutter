@@ -1,3 +1,7 @@
+## 0.4.1
+
+* Upgraded some dependencies versions
+
 ## 0.4.0
 
 * We don't encounter issue when using a logger and this package.
