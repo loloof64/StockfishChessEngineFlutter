@@ -1,6 +1,6 @@
 /*
   Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2022 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2023 The Stockfish developers (see AUTHORS file)
 
   Stockfish is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -16,15 +16,10 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-Modified by loloof64
-*/
-
 #include <algorithm>
 #include <cassert>
 #include <ostream>
 #include <sstream>
-#include <string> // added by loloof64
 
 #include "evaluate.h"
 #include "misc.h"
@@ -45,13 +40,13 @@ UCI::OptionsMap Options; // Global object
 namespace UCI {
 
 /// 'On change' actions, triggered by an option's value change
-void on_clear_hash(const Option&) { Search::clear(); }
-void on_hash_size(const Option& o) { TT.resize(size_t(o)); }
-void on_logger(const Option& o) { start_logger(o); }
-void on_threads(const Option& o) { Threads.set(size_t(o)); }
-void on_tb_path(const Option& o) { Tablebases::init(o); }
-void on_use_NNUE(const Option& ) { Eval::NNUE::init(); }
-void on_eval_file(const Option& ) { Eval::NNUE::init(); }
+static void on_clear_hash(const Option&) { Search::clear(); }
+static void on_hash_size(const Option& o) { TT.resize(size_t(o)); }
+static void on_logger(const Option& o) { start_logger(o); }
+static void on_threads(const Option& o) { Threads.set(size_t(o)); }
+static void on_tb_path(const Option& o) { Tablebases::init(o); }
+static void on_use_NNUE(const Option&) { Eval::NNUE::init(); }
+static void on_eval_file(const Option&) { Eval::NNUE::init(); }
 
 /// Our case insensitive less() function as required by UCI protocol
 bool CaseInsensitiveLess::operator() (const string& s1, const string& s2) const {
@@ -68,7 +63,7 @@ void init(OptionsMap& o) {
   constexpr int MaxHashMB = Is64Bit ? 33554432 : 2048;
 
   o["Debug Log File"]        << Option("", on_logger);
-  o["Threads"]               << Option(1, 1, 512, on_threads);
+  o["Threads"]               << Option(1, 1, 1024, on_threads);
   o["Hash"]                  << Option(16, 1, MaxHashMB, on_hash_size);
   o["Clear Hash"]            << Option(on_clear_hash);
   o["Ponder"]                << Option(false);
@@ -80,7 +75,7 @@ void init(OptionsMap& o) {
   o["UCI_Chess960"]          << Option(false);
   o["UCI_AnalyseMode"]       << Option(false);
   o["UCI_LimitStrength"]     << Option(false);
-  o["UCI_Elo"]               << Option(1350, 1350, 2850);
+  o["UCI_Elo"]               << Option(1320, 1320, 3190);
   o["UCI_ShowWDL"]           << Option(false);
   o["SyzygyPath"]            << Option("<empty>", on_tb_path);
   o["SyzygyProbeDepth"]      << Option(1, 1, 100);
@@ -96,7 +91,7 @@ void init(OptionsMap& o) {
 
 std::ostream& operator<<(std::ostream& os, const OptionsMap& om) {
 
-  for (size_t idx = 0; idx < om.size(); ++idx) {
+  for (size_t idx = 0; idx < om.size(); ++idx)
       for (const auto& it : om)
           if (it.second.idx == idx)
           {
@@ -113,31 +108,29 @@ std::ostream& operator<<(std::ostream& os, const OptionsMap& om) {
 
               break;
           }
-  }
 
   return os;
 }
 
 // added by loloof64
-void send_output_string(const OptionsMap& om) {
-    for (size_t idx = 0; idx < om.size(); ++idx) {
+void print(const OptionsMap& om) {
+  for (size_t idx = 0; idx < om.size(); ++idx)
       for (const auto& it : om)
           if (it.second.idx == idx)
           {
               const Option& o = it.second;
-              OutputsQueue::getInstance().send(string("\noption name ") + it.first + " type " + o.type);
+              OutputsQueue::getInstance().send(std::string("\noption name ") + it.first + std::string(" type ") + o.type);
 
               if (o.type == "string" || o.type == "check" || o.type == "combo")
-                  OutputsQueue::getInstance().send(string(" default ") + o.defaultValue);
+                  OutputsQueue::getInstance().send(std::string(" default ") + o.defaultValue);
 
               if (o.type == "spin")
-                  OutputsQueue::getInstance().send(string(" default " + std::to_string(int(stof(o.defaultValue))) 
-                    + " min " + std::to_string(o.min)
-                    + " max " + std::to_string(o.max)));
+                  OutputsQueue::getInstance().send(std::string(" default ") + std::to_string(int(stof(o.defaultValue)))
+                     + std::string(" min ")  +   std::to_string(o.min)
+                     + std::string(" max ")  +   std::to_string(o.max));
 
               break;
           }
-    }
 }
 
 
@@ -158,9 +151,9 @@ Option::Option(double v, int minv, int maxv, OnChange f) : type("spin"), min(min
 Option::Option(const char* v, const char* cur, OnChange f) : type("combo"), min(0), max(0), on_change(f)
 { defaultValue = v; currentValue = cur; }
 
-Option::operator double() const {
+Option::operator int() const {
   assert(type == "check" || type == "spin");
-  return (type == "spin" ? stof(currentValue) : currentValue == "true");
+  return (type == "spin" ? std::stoi(currentValue) : currentValue == "true");
 }
 
 Option::operator std::string() const {

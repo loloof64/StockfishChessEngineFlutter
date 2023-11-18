@@ -1,6 +1,6 @@
 /*
   Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2022 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2023 The Stockfish developers (see AUTHORS file)
 
   Stockfish is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -23,6 +23,8 @@
 #include "types.h"
 #include "misc.h"
 #include "uci.h"
+
+#include "../../commands_queue.h"
 
 using std::string;
 
@@ -70,12 +72,22 @@ static void make_option(const string& n, int v, const SetRange& r) {
   LastOption = &Options[n];
 
   // Print formatted parameters, ready to be copy-pasted in Fishtest
-  std::cout << n << ","
+  /*
+    Old way by Stockfish developers
+
+    std::cout << n << ","
             << v << ","
             << r(v).first << "," << r(v).second << ","
             << (r(v).second - r(v).first) / 20.0 << ","
             << "0.0020"
-            << std::endl;
+            << std::endl;  
+  */
+  OutputsQueue::getInstance().send(n + std::string(",")
+            + std::to_string(v) + std::string(",")
+            + std::to_string(r(v).first) + std::string(",") + std::to_string(r(v).second) + std::string(",")
+            + std::to_string((r(v).second - r(v).first) / 20.0) + std::string(",")
+            + std::string("0.0020")
+            + "\n");
 }
 
 template<> void Tune::Entry<int>::init_option() { make_option(name, value, range); }

@@ -1,3 +1,8 @@
+## 0.5.0
+
+* upgraded stockfish to version 16
+* fixed compilation errors on Android
+
 ## 0.4.1
 
 * Upgraded some dependencies versions

@@ -1,6 +1,6 @@
 /*
   Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2022 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2023 The Stockfish developers (see AUTHORS file)
 
   Stockfish is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /*
 Modified by loloof64
-Replaced sync_cout by calls to OutputsQueue::getInstance().send()
+Replaced calls to sync_cout with a call to OutputsQueue::getInstance().send()
 */
 
 #include <algorithm>
@@ -41,9 +41,9 @@ Replaced sync_cout by calls to OutputsQueue::getInstance().send()
 #include "timeman.h"
 #include "uci.h"
 #include "incbin/incbin.h"
+#include "nnue/evaluate_nnue.h"
 
 #include "../../commands_queue.h"
-
 
 // Macro to embed the default efficiently updatable neural network (NNUE) file
 // data in the engine binary (using incbin.h, by Dale Weiler).
@@ -85,25 +85,22 @@ namespace Eval {
         return;
 
     string eval_file = string(Options["EvalFile"]);
-
     if (eval_file.empty())
         eval_file = EvalFileDefaultName;
 
     #if defined(DEFAULT_NNUE_DIRECTORY)
-    #define stringify2(x) #x
-    #define stringify(x) stringify2(x)
     vector<string> dirs = { "<internal>" , "" , CommandLine::binaryDirectory , stringify(DEFAULT_NNUE_DIRECTORY) };
     #else
     vector<string> dirs = { "<internal>" , "" , CommandLine::binaryDirectory };
     #endif
 
-    for (string directory : dirs)
+    for (const string& directory : dirs)
         if (currentEvalFileName != eval_file)
         {
             if (directory != "<internal>")
             {
                 ifstream stream(directory + eval_file, ios::binary);
-                if (load_eval(eval_file, stream))
+                if (NNUE::load_eval(eval_file, stream))
                     currentEvalFileName = eval_file;
             }
 
@@ -119,7 +116,7 @@ namespace Eval {
                 (void) gEmbeddedNNUEEnd; // Silence warning on unused variable
 
                 istream stream(&buffer);
-                if (load_eval(eval_file, stream))
+                if (NNUE::load_eval(eval_file, stream))
                     currentEvalFileName = eval_file;
             }
         }
@@ -141,38 +138,38 @@ namespace Eval {
         string msg4 = "The default net can be downloaded from: https://tests.stockfishchess.org/api/nn/" + std::string(EvalFileDefaultName);
         string msg5 = "The engine will be terminated now.";
 
-        /* previous way (by Stockfish authors)
-        sync_cout << "info string ERROR: " << msg1 << sync_endl;
-        sync_cout << "info string ERROR: " << msg2 << sync_endl;
-        sync_cout << "info string ERROR: " << msg3 << sync_endl;
-        sync_cout << "info string ERROR: " << msg4 << sync_endl;
-        sync_cout << "info string ERROR: " << msg5 << sync_endl;
+        /*
+        Old way by Stockfish developers
+            sync_cout << "info string ERROR: " << msg1 << sync_endl;
+            sync_cout << "info string ERROR: " << msg2 << sync_endl;
+            sync_cout << "info string ERROR: " << msg3 << sync_endl;
+            sync_cout << "info string ERROR: " << msg4 << sync_endl;
+            sync_cout << "info string ERROR: " << msg5 << sync_endl;
         */
 
-        /* new way */
+        // New way by loloof64
         OutputsQueue::getInstance().send(string("info string ERROR: ") + msg1 + "\n");
         OutputsQueue::getInstance().send(string("info string ERROR: ") + msg2 + "\n");
         OutputsQueue::getInstance().send(string("info string ERROR: ") + msg3 + "\n");
         OutputsQueue::getInstance().send(string("info string ERROR: ") + msg4 + "\n");
         OutputsQueue::getInstance().send(string("info string ERROR: ") + msg5 + "\n");
-        /* end of new way block*/
+        //---------------------
 
         exit(EXIT_FAILURE);
     }
 
-    /* old way
-    if (useNNUE)
-        sync_cout << "info string NNUE evaluation using " << eval_file << " enabled" << sync_endl;
-    else
-        sync_cout << "info string classical evaluation enabled" << sync_endl;
-    */
+    /*
+        Old way by Stockfish developers
 
-    // new way
+        if (useNNUE)
+            sync_cout << "info string NNUE evaluation using " << eval_file << " enabled" << sync_endl;
+        else
+            sync_cout << "info string classical evaluation enabled" << sync_endl;
+    */
     if (useNNUE)
-        OutputsQueue::getInstance().send(string("info string NNUE evaluation using ") + eval_file + " enabled" + "\n");
+        OutputsQueue::getInstance().send(string("info string NNUE evaluation using ") + string(eval_file) + " enabled" + "\n");
     else
         OutputsQueue::getInstance().send(string("info string classical evaluation enabled") + "\n");
-    // end of new way block
   }
 }
 
@@ -186,24 +183,24 @@ namespace Trace {
 
   Score scores[TERM_NB][COLOR_NB];
 
-  double to_cp(Value v) { return double(v) / PawnValueEg; }
+  static double to_cp(Value v) { return double(v) / UCI::NormalizeToPawnValue; }
 
-  void add(int idx, Color c, Score s) {
+  static void add(int idx, Color c, Score s) {
     scores[idx][c] = s;
   }
 
-  void add(int idx, Score w, Score b = SCORE_ZERO) {
+  static void add(int idx, Score w, Score b = SCORE_ZERO) {
     scores[idx][WHITE] = w;
     scores[idx][BLACK] = b;
   }
 
-  std::ostream& operator<<(std::ostream& os, Score s) {
+  static std::ostream& operator<<(std::ostream& os, Score s) {
     os << std::setw(5) << to_cp(mg_value(s)) << " "
        << std::setw(5) << to_cp(eg_value(s));
     return os;
   }
 
-  std::ostream& operator<<(std::ostream& os, Term t) {
+  static std::ostream& operator<<(std::ostream& os, Term t) {
 
     if (t == MATERIAL || t == IMBALANCE || t == WINNABLE || t == TOTAL)
         os << " ----  ----"    << " | " << " ----  ----";
@@ -220,8 +217,8 @@ using namespace Trace;
 namespace {
 
   // Threshold for lazy and space evaluation
-  constexpr Value LazyThreshold1    =  Value(3631);
-  constexpr Value LazyThreshold2    =  Value(2084);
+  constexpr Value LazyThreshold1    =  Value(3622);
+  constexpr Value LazyThreshold2    =  Value(1962);
   constexpr Value SpaceThreshold    =  Value(11551);
 
   // KingAttackWeights[PieceType] contains king attack weights by piece type
@@ -415,10 +412,10 @@ namespace {
   template<Tracing T> template<Color Us, PieceType Pt>
   Score Evaluation<T>::pieces() {
 
-    constexpr Color     Them = ~Us;
-    constexpr Direction Down = -pawn_push(Us);
-    constexpr Bitboard OutpostRanks = (Us == WHITE ? Rank4BB | Rank5BB | Rank6BB
-                                                   : Rank5BB | Rank4BB | Rank3BB);
+    constexpr Color Them = ~Us;
+    [[maybe_unused]] constexpr Direction Down = -pawn_push(Us);
+    [[maybe_unused]] constexpr Bitboard OutpostRanks = (Us == WHITE ? Rank4BB | Rank5BB | Rank6BB
+                                                                    : Rank5BB | Rank4BB | Rank3BB);
     Bitboard b1 = pos.pieces(Us, Pt);
     Bitboard b, bb;
     Score score = SCORE_ZERO;
@@ -457,7 +454,7 @@ namespace {
         int mob = popcount(b & mobilityArea[Us]);
         mobility[Us] += MobilityBonus[Pt - 2][mob];
 
-        if (Pt == BISHOP || Pt == KNIGHT)
+        if constexpr (Pt == BISHOP || Pt == KNIGHT)
         {
             // Bonus if the piece is on an outpost square or can reach one
             // Bonus for knights (UncontestedOutpost) if few relevant targets
@@ -1008,7 +1005,7 @@ namespace {
     // Initialize score by reading the incrementally updated scores included in
     // the position object (material + piece square tables) and the material
     // imbalance. Score is computed internally from the white point of view.
-    Score score = pos.psq_score() + me->imbalance() + pos.this_thread()->trend;
+    Score score = pos.psq_score() + me->imbalance();
 
     // Probe the pawn hash table
     pe = Pawns::probe(pos);
@@ -1069,38 +1066,6 @@ make_v:
     return v;
   }
 
-
-  /// Fisher Random Chess: correction for cornered bishops, to fix chess960 play with NNUE
-
-  Value fix_FRC(const Position& pos) {
-
-    constexpr Bitboard Corners =  1ULL << SQ_A1 | 1ULL << SQ_H1 | 1ULL << SQ_A8 | 1ULL << SQ_H8;
-
-    if (!(pos.pieces(BISHOP) & Corners))
-        return VALUE_ZERO;
-
-    int correction = 0;
-
-    if (   pos.piece_on(SQ_A1) == W_BISHOP
-        && pos.piece_on(SQ_B2) == W_PAWN)
-        correction -= CorneredBishop;
-
-    if (   pos.piece_on(SQ_H1) == W_BISHOP
-        && pos.piece_on(SQ_G2) == W_PAWN)
-        correction -= CorneredBishop;
-
-    if (   pos.piece_on(SQ_A8) == B_BISHOP
-        && pos.piece_on(SQ_B7) == B_PAWN)
-        correction += CorneredBishop;
-
-    if (   pos.piece_on(SQ_H8) == B_BISHOP
-        && pos.piece_on(SQ_G7) == B_PAWN)
-        correction += CorneredBishop;
-
-    return pos.side_to_move() == WHITE ?  Value(3 * correction)
-                                       : -Value(3 * correction);
-  }
-
 } // namespace Eval
 
 
@@ -1109,38 +1074,35 @@ make_v:
 
 Value Eval::evaluate(const Position& pos) {
 
+  assert(!pos.checkers());
+
   Value v;
-  bool useClassical = false;
+  Value psq = pos.psq_eg_stm();
 
-  // Deciding between classical and NNUE eval (~10 Elo): for high PSQ imbalance we use classical,
-  // but we switch to NNUE during long shuffling or with high material on the board.
-  if (  !useNNUE
-      || ((pos.this_thread()->depth > 9 || pos.count<ALL_PIECES>() > 7) &&
-          abs(eg_value(pos.psq_score())) * 5 > (856 + pos.non_pawn_material() / 64) * (10 + pos.rule50_count())))
+  // We use the much less accurate but faster Classical eval when the NNUE
+  // option is set to false. Otherwise we use the NNUE eval unless the
+  // PSQ advantage is decisive. (~4 Elo at STC, 1 Elo at LTC)
+  bool useClassical = !useNNUE || abs(psq) > 2048;
+
+  if (useClassical)
+      v = Evaluation<NO_TRACE>(pos).value();
+  else
   {
-      v = Evaluation<NO_TRACE>(pos).value();          // classical
-      useClassical = abs(v) >= 297;
-  }
+      int nnueComplexity;
+      int npm = pos.non_pawn_material() / 64;
 
-  // If result of a classical evaluation is much lower than threshold fall back to NNUE
-  if (useNNUE && !useClassical)
-  {
-       Value nnue     = NNUE::evaluate(pos, true);     // NNUE
-       int scale      = 1036 + 22 * pos.non_pawn_material() / 1024;
-       Color stm      = pos.side_to_move();
-       Value optimism = pos.this_thread()->optimism[stm];
-       Value psq      = (stm == WHITE ? 1 : -1) * eg_value(pos.psq_score());
-       int complexity = 35 * abs(nnue - psq) / 256;
+      Color stm = pos.side_to_move();
+      Value optimism = pos.this_thread()->optimism[stm];
 
-       optimism = optimism * (44 + complexity) / 31;
-       v = (nnue + optimism) * scale / 1024 - optimism;
+      Value nnue = NNUE::evaluate(pos, true, &nnueComplexity);
 
-       if (pos.is_chess960())
-           v += fix_FRC(pos);
+      // Blend optimism with nnue complexity and (semi)classical complexity
+      optimism += optimism * (nnueComplexity + abs(psq - nnue)) / 512;
+      v = (nnue * (945 + npm) + optimism * (150 + npm)) / 1024;
   }
 
   // Damp down the evaluation linearly when shuffling
-  v = v * (195 - pos.rule50_count()) / 211;
+  v = v * (200 - pos.rule50_count()) / 214;
 
   // Guarantee evaluation does not hit the tablebase range
   v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
@@ -1166,8 +1128,6 @@ std::string Eval::trace(Position& pos) {
   std::memset(scores, 0, sizeof(scores));
 
   // Reset any global variable used in eval
-  pos.this_thread()->depth           = 0;
-  pos.this_thread()->trend           = SCORE_ZERO;
   pos.this_thread()->bestValue       = VALUE_ZERO;
   pos.this_thread()->optimism[WHITE] = VALUE_ZERO;
   pos.this_thread()->optimism[BLACK] = VALUE_ZERO;

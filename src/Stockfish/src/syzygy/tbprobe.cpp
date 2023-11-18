@@ -1,6 +1,6 @@
 /*
   Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2022 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2023 The Stockfish developers (see AUTHORS file)
 
   Stockfish is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
 
 /*
 Modified by loloof64
-Replaced sync_cout by calls to OutputsQueue::getInstance().send()
 */
 
 #include <algorithm>
@@ -29,9 +28,10 @@ Replaced sync_cout by calls to OutputsQueue::getInstance().send()
 #include <fstream>
 #include <iostream>
 #include <list>
-#include <sstream>
-#include <type_traits>
 #include <mutex>
+#include <sstream>
+#include <string_view>
+#include <type_traits>
 
 #include "../bitboard.h"
 #include "../movegen.h"
@@ -42,6 +42,8 @@ Replaced sync_cout by calls to OutputsQueue::getInstance().send()
 
 #include "tbprobe.h"
 
+#include "../../../commands_queue.h"
+
 #ifndef _WIN32
 #include <fcntl.h>
 #include <unistd.h>
@@ -50,12 +52,10 @@ Replaced sync_cout by calls to OutputsQueue::getInstance().send()
 #else
 #define WIN32_LEAN_AND_MEAN
 #ifndef NOMINMAX
-#define NOMINMAX // Disable macros min() and max()
+#  define NOMINMAX // Disable macros min() and max()
 #endif
 #include <windows.h>
 #endif
-
-#include "../../../commands_queue.h"
 
 using namespace Stockfish::Tablebases;
 
@@ -66,6 +66,7 @@ namespace Stockfish {
 namespace {
 
 constexpr int TBPIECES = 7; // Max number of supported pieces
+constexpr int MAX_DTZ = 1 << 18; // Max DTZ supported, large enough to deal with the syzygy TB limit.
 
 enum { BigEndian, LittleEndian };
 enum TBType { WDL, DTZ }; // Used as template parameter
@@ -76,7 +77,7 @@ enum TBFlag { STM = 1, Mapped = 2, WinPlies = 4, LossPlies = 8, Wide = 16, Singl
 inline WDLScore operator-(WDLScore d) { return WDLScore(-int(d)); }
 inline Square operator^(Square s, int i) { return Square(int(s) ^ i); }
 
-const std::string PieceToChar = " PNBRQK  pnbrqk";
+constexpr std::string_view PieceToChar = " PNBRQK  pnbrqk";
 
 int MapPawns[SQUARE_NB];
 int MapB1H1H7[SQUARE_NB];
@@ -147,7 +148,7 @@ struct SparseEntry {
 
 static_assert(sizeof(SparseEntry) == 6, "SparseEntry must be 6 bytes");
 
-typedef uint16_t Sym; // Huffman symbol
+using Sym = uint16_t; // Huffman symbol
 
 struct LR {
     enum Side { Left, Right };
@@ -205,13 +206,10 @@ public:
         }
     }
 
-    // Memory map the file and check it. File should be already open and will be
-    // closed after mapping.
+    // Memory map the file and check it.
     uint8_t* map(void** baseAddress, uint64_t* mapping, TBType type) {
-
-        assert(is_open());
-
-        close(); // Need to re-open to get native file descriptor
+        if (is_open())
+            close(); // Need to re-open to get native file descriptor
 
 #ifndef _WIN32
         struct stat statbuf;
@@ -335,7 +333,7 @@ struct PairsData {
 // first access, when the corresponding file is memory mapped.
 template<TBType Type>
 struct TBTable {
-    typedef typename std::conditional<Type == WDL, WDLScore, int>::type Ret;
+    using Ret = typename std::conditional<Type == WDL, WDLScore, int>::type;
 
     static constexpr int Sides = Type == WDL ? 2 : 1;
 
@@ -474,7 +472,7 @@ public:
     void add(const std::vector<PieceType>& pieces);
 };
 
-TBTables _TBTables;
+TBTables TBTables;
 
 // If the corresponding file exists two new objects TBTable<WDL> and TBTable<DTZ>
 // are created and added to the lists and hash table. Called at init time.
@@ -1179,7 +1177,7 @@ Ret probe_table(const Position& pos, ProbeState* result, WDLScore wdl = WDLDraw)
     if (pos.count<ALL_PIECES>() == 2) // KvK
         return Ret(WDLDraw);
 
-    TBTable<Type>* entry = _TBTables.get<Type>(pos.material_key());
+    TBTable<Type>* entry = TBTables.get<Type>(pos.material_key());
 
     if (!entry || !mapped(*entry, pos))
         return *result = FAIL, Ret();
@@ -1270,7 +1268,7 @@ WDLScore search(Position& pos, ProbeState* result) {
 /// safe, nor it needs to be.
 void Tablebases::init(const std::string& paths) {
 
-    _TBTables.clear();
+    TBTables.clear();
     MaxCardinality = 0;
     TBFile::Paths = paths;
 
@@ -1297,7 +1295,7 @@ void Tablebases::init(const std::string& paths) {
     for (auto s : diagonal)
         MapA1D1D4[s] = code++;
 
-    // MapKK[] encodes all the 461 possible legal positions of two kings where
+    // MapKK[] encodes all the 462 possible legal positions of two kings where
     // the first is in the a1-d1-d4 triangle. If the first king is on the a1-d4
     // diagonal, the other one shall not to be above the a1-h8 diagonal.
     std::vector<std::pair<int, Square>> bothOnDiagonal;
@@ -1373,48 +1371,48 @@ void Tablebases::init(const std::string& paths) {
 
     // Add entries in TB tables if the corresponding ".rtbw" file exists
     for (PieceType p1 = PAWN; p1 < KING; ++p1) {
-        _TBTables.add({KING, p1, KING});
+        TBTables.add({KING, p1, KING});
 
         for (PieceType p2 = PAWN; p2 <= p1; ++p2) {
-            _TBTables.add({KING, p1, p2, KING});
-            _TBTables.add({KING, p1, KING, p2});
+            TBTables.add({KING, p1, p2, KING});
+            TBTables.add({KING, p1, KING, p2});
 
             for (PieceType p3 = PAWN; p3 < KING; ++p3)
-                _TBTables.add({KING, p1, p2, KING, p3});
+                TBTables.add({KING, p1, p2, KING, p3});
 
             for (PieceType p3 = PAWN; p3 <= p2; ++p3) {
-                _TBTables.add({KING, p1, p2, p3, KING});
+                TBTables.add({KING, p1, p2, p3, KING});
 
                 for (PieceType p4 = PAWN; p4 <= p3; ++p4) {
-                    _TBTables.add({KING, p1, p2, p3, p4, KING});
+                    TBTables.add({KING, p1, p2, p3, p4, KING});
 
                     for (PieceType p5 = PAWN; p5 <= p4; ++p5)
-                        _TBTables.add({KING, p1, p2, p3, p4, p5, KING});
+                        TBTables.add({KING, p1, p2, p3, p4, p5, KING});
 
                     for (PieceType p5 = PAWN; p5 < KING; ++p5)
-                        _TBTables.add({KING, p1, p2, p3, p4, KING, p5});
+                        TBTables.add({KING, p1, p2, p3, p4, KING, p5});
                 }
 
                 for (PieceType p4 = PAWN; p4 < KING; ++p4) {
-                    _TBTables.add({KING, p1, p2, p3, KING, p4});
+                    TBTables.add({KING, p1, p2, p3, KING, p4});
 
                     for (PieceType p5 = PAWN; p5 <= p4; ++p5)
-                        _TBTables.add({KING, p1, p2, p3, KING, p4, p5});
+                        TBTables.add({KING, p1, p2, p3, KING, p4, p5});
                 }
             }
 
             for (PieceType p3 = PAWN; p3 <= p1; ++p3)
                 for (PieceType p4 = PAWN; p4 <= (p1 == p3 ? p2 : p3); ++p4)
-                    _TBTables.add({KING, p1, p2, KING, p3, p4});
+                    TBTables.add({KING, p1, p2, KING, p3, p4});
         }
     }
 
     /*
-        Old way by Stockfish developers
-    
-    sync_cout << "info string Found " << _TBTables.size() << " tablebases" << sync_endl;
+        Old ways by Stockfish developers
+
+        sync_cout << "info string Found " << TBTables.size() << " tablebases" << sync_endl;
     */
-    OutputsQueue::getInstance().send(std::string("info string Found ") + std::to_string(_TBTables.size()) + " tablebases\n");
+    OutputsQueue::getInstance().send(std::string("info string Found ") + std::to_string(TBTables.size()) + std::string(" tablebases") + "\n");
 }
 
 // Probe the WDL table for a particular position.
@@ -1525,7 +1523,7 @@ int Tablebases::probe_dtz(Position& pos, ProbeState* result) {
 // A return value false indicates that not all probes were successful.
 bool Tablebases::root_probe(Position& pos, Search::RootMoves& rootMoves) {
 
-    ProbeState result;
+    ProbeState result = OK;
     StateInfo st;
 
     // Obtain 50-move counter for the root position
@@ -1534,7 +1532,7 @@ bool Tablebases::root_probe(Position& pos, Search::RootMoves& rootMoves) {
     // Check whether a position was repeated since the last zeroing move.
     bool rep = pos.has_repeated();
 
-    int dtz, bound = Options["Syzygy50MoveRule"] ? 900 : 1;
+    int dtz, bound = Options["Syzygy50MoveRule"] ? (MAX_DTZ - 100) : 1;
 
     // Probe and rank each move
     for (auto& m : rootMoves)
@@ -1577,8 +1575,8 @@ bool Tablebases::root_probe(Position& pos, Search::RootMoves& rootMoves) {
 
         // Better moves are ranked higher. Certain wins are ranked equally.
         // Losing moves are ranked equally unless a 50-move draw is in sight.
-        int r =  dtz > 0 ? (dtz + cnt50 <= 99 && !rep ? 1000 : 1000 - (dtz + cnt50))
-               : dtz < 0 ? (-dtz * 2 + cnt50 < 100 ? -1000 : -1000 + (-dtz + cnt50))
+        int r =  dtz > 0 ? (dtz + cnt50 <= 99 && !rep ? MAX_DTZ : MAX_DTZ - (dtz + cnt50))
+               : dtz < 0 ? (-dtz * 2 + cnt50 < 100 ? -MAX_DTZ : -MAX_DTZ + (-dtz + cnt50))
                : 0;
         m.tbRank = r;
 
@@ -1586,9 +1584,9 @@ bool Tablebases::root_probe(Position& pos, Search::RootMoves& rootMoves) {
         // 1 cp to cursed wins and let it grow to 49 cp as the positions gets
         // closer to a real win.
         m.tbScore =  r >= bound ? VALUE_MATE - MAX_PLY - 1
-                   : r >  0     ? Value((std::max( 3, r - 800) * int(PawnValueEg)) / 200)
+                   : r >  0     ? Value((std::max( 3, r - (MAX_DTZ - 200)) * int(PawnValueEg)) / 200)
                    : r == 0     ? VALUE_DRAW
-                   : r > -bound ? Value((std::min(-3, r + 800) * int(PawnValueEg)) / 200)
+                   : r > -bound ? Value((std::min(-3, r + (MAX_DTZ - 200)) * int(PawnValueEg)) / 200)
                    :             -VALUE_MATE + MAX_PLY + 1;
     }
 
@@ -1602,9 +1600,9 @@ bool Tablebases::root_probe(Position& pos, Search::RootMoves& rootMoves) {
 // A return value false indicates that not all probes were successful.
 bool Tablebases::root_probe_wdl(Position& pos, Search::RootMoves& rootMoves) {
 
-    static const int WDL_to_rank[] = { -1000, -899, 0, 899, 1000 };
+    static const int WDL_to_rank[] = { -MAX_DTZ, -MAX_DTZ + 101, 0, MAX_DTZ - 101, MAX_DTZ };
 
-    ProbeState result;
+    ProbeState result = OK;
     StateInfo st;
     WDLScore wdl;
 

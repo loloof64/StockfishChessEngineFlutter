@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.18)
 project(stockfish VERSION 0.0.1 LANGUAGES CXX)
 file(GLOB_RECURSE cppPaths "Stockfish/src/*.cpp")
 set(CMAKE_CXX_STANDARD 17)
-set(NNUE_NAME nn-ad9b42354671.nnue)
+set(NNUE_NAME nn-0000000000a0.nnue)
 
 add_library(stockfish SHARED
   "commands_queue.cpp"
