@@ -1,10 +1,14 @@
 //#define _ffigen
 
+// Taken from https://github.com/jusax23/flutter_stockfish_plugin
+
 #ifdef _WIN32
 #include <BaseTsd.h>
 #else
 #include <stdint.h>
 #endif
+
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -31,10 +35,10 @@ FFI_PLUGIN_EXPORT int stockfish_main();
 #ifndef _ffigen
 extern "C"
 #endif
-FFI_PLUGIN_EXPORT void stockfish_stdin_write(char *data);
+FFI_PLUGIN_EXPORT ssize_t stockfish_stdin_write(char *data);
 
 // Reading Stockfish STDOUT
 #ifndef _ffigen
 extern "C"
 #endif
-FFI_PLUGIN_EXPORT const char* stockfish_stdout_read();
+FFI_PLUGIN_EXPORT char * stockfish_stdout_read();

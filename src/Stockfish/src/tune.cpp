@@ -24,8 +24,6 @@
 #include "misc.h"
 #include "uci.h"
 
-#include "../../commands_queue.h"
-
 using std::string;
 
 namespace Stockfish {
@@ -72,22 +70,12 @@ static void make_option(const string& n, int v, const SetRange& r) {
   LastOption = &Options[n];
 
   // Print formatted parameters, ready to be copy-pasted in Fishtest
-  /*
-    Old way by Stockfish developers
-
-    std::cout << n << ","
+  fakeout << n << ","
             << v << ","
             << r(v).first << "," << r(v).second << ","
             << (r(v).second - r(v).first) / 20.0 << ","
             << "0.0020"
-            << std::endl;  
-  */
-  OutputsQueue::getInstance().send(n + std::string(",")
-            + std::to_string(v) + std::string(",")
-            + std::to_string(r(v).first) + std::string(",") + std::to_string(r(v).second) + std::string(",")
-            + std::to_string((r(v).second - r(v).first) / 20.0) + std::string(",")
-            + std::string("0.0020")
-            + "\n");
+            << fakeendl;
 }
 
 template<> void Tune::Entry<int>::init_option() { make_option(name, value, range); }

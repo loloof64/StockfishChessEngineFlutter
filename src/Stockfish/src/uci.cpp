@@ -16,19 +16,11 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-Modified by loloof64
-*/
-
 #include <cassert>
 #include <cmath>
 #include <iostream>
 #include <sstream>
 #include <string>
-
-#include <optional>
-#include <thread>
-#include <chrono>
 
 #include "benchmark.h"
 #include "evaluate.h"
@@ -41,8 +33,6 @@ Modified by loloof64
 #include "uci.h"
 #include "syzygy/tbprobe.h"
 #include "nnue/evaluate_nnue.h"
-
-#include "../../commands_queue.h"
 
 using namespace std;
 
@@ -99,12 +89,7 @@ namespace {
 
     Eval::NNUE::verify();
 
-    /*
-        Old way by Stockfish developers
-
-        sync_cout << "\n" << Eval::trace(p) << sync_endl;
-    */
-    OutputsQueue::getInstance().send(std::string("\n") + Eval::trace(p) + "\n");
+    sync_cout << "\n" << Eval::trace(p) << sync_endl;
   }
 
 
@@ -128,13 +113,7 @@ namespace {
     if (Options.count(name))
         Options[name] = value;
     else
-        /*
-            Old way by Stockfish developers
-
-
-            sync_cout << "No such option: " << name << sync_endl;
-        */
-        OutputsQueue::getInstance().send(std::string("No such option: ") + std::string(name) + "\n");
+        sync_cout << "No such option: " << name << sync_endl;
   }
 
 
@@ -254,8 +233,7 @@ namespace {
 /// In addition to the UCI ones, some additional debug commands are also supported.
 
 void UCI::loop(int argc, char* argv[]) {
-  using namespace std::chrono_literals;
-  
+
   Position pos;
   string token, cmd;
   StateListPtr states(new std::deque<StateInfo>(1));
@@ -266,20 +244,8 @@ void UCI::loop(int argc, char* argv[]) {
       cmd += std::string(argv[i]) + " ";
 
   do {
-      /*
-        Old way by Stockfish developers
-
-        if (argc == 1 && !getline(cin, cmd)) // Wait for an input or an end-of-file (EOF) indication
+      if (argc == 1 && !getline(fakein, cmd)) // Wait for an input or an end-of-file (EOF) indication
           cmd = "quit";
-      */
-      auto input_command = InputsQueue::getInstance().receive();
-      if (!input_command.has_value()) {
-        std::this_thread::sleep_for(100ms);
-        continue;
-      }
-      else {
-        cmd = input_command.value();
-      }
 
       istringstream is(cmd);
 
@@ -297,43 +263,24 @@ void UCI::loop(int argc, char* argv[]) {
       else if (token == "ponderhit")
           Threads.main()->ponder = false; // Switch to the normal search
 
-      else if (token == "uci") {
-            /* Old way by Stockfish developers
+      else if (token == "uci")
           sync_cout << "id name " << engine_info(true)
                     << "\n"       << Options
                     << "\nuciok"  << sync_endl;
-                    */
-          OutputsQueue::getInstance().send(std::string("id name ") + std::string(engine_info(true)
-            + "\n")); 
-          print(Options);
-          OutputsQueue::getInstance().send(std::string("\nuciok") + "\n");
-      }
 
       else if (token == "setoption")  setoption(is);
       else if (token == "go")         go(pos, is, states);
       else if (token == "position")   position(pos, is, states);
       else if (token == "ucinewgame") Search::clear();
-      /* Old way by Stockdish developers
-      
       else if (token == "isready")    sync_cout << "readyok" << sync_endl;
-      */
-      else if (token == "isready")    OutputsQueue::getInstance().send(std::string("readyok") + "\n");
 
       // Add custom non-UCI commands, mainly for debugging purposes.
       // These commands must not be used during a search!
       else if (token == "flip")     pos.flip();
       else if (token == "bench")    bench(pos, is, states);
-      /* Old way by Stockfish developers
-      
       else if (token == "d")        sync_cout << pos << sync_endl;
-      */
-      else if (token == "d")        send_output_string(pos);
       else if (token == "eval")     trace_eval(pos);
-      /* Old way by Stockfish developers
-      
       else if (token == "compiler") sync_cout << compiler_info() << sync_endl;
-      */
-      else if (token == "compiler") OutputsQueue::getInstance().send(compiler_info() + "\n");
       else if (token == "export_net")
       {
           std::optional<std::string> filename;
@@ -343,30 +290,14 @@ void UCI::loop(int argc, char* argv[]) {
           Eval::NNUE::save_eval(filename);
       }
       else if (token == "--help" || token == "help" || token == "--license" || token == "license")
-          /*
-            Old way by Stockfish developers
-
-            sync_cout << "\nStockfish is a powerful chess engine for playing and analyzing."
+          sync_cout << "\nStockfish is a powerful chess engine for playing and analyzing."
                        "\nIt is released as free software licensed under the GNU GPLv3 License."
                        "\nStockfish is normally used with a graphical user interface (GUI) and implements"
                        "\nthe Universal Chess Interface (UCI) protocol to communicate with a GUI, an API, etc."
                        "\nFor any further information, visit https://github.com/official-stockfish/Stockfish#readme"
-                       "\nor read the corresponding README.md and Copying.txt files distributed along with this program.\n" << sync_endl;  
-            */
-          OutputsQueue::getInstance().send(std::string("\nStockfish is a powerful chess engine for playing and analyzing.")
-                       + std::string("\nIt is released as free software licensed under the GNU GPLv3 License.")
-                       + std::string("\nStockfish is normally used with a graphical user interface (GUI) and implements")
-                       + std::string("\nthe Universal Chess Interface (UCI) protocol to communicate with a GUI, an API, etc.")
-                       + std::string("\nFor any further information, visit https://github.com/official-stockfish/Stockfish#readme")
-                       + std::string("\nor read the corresponding README.md and Copying.txt files distributed along with this program.\n") + "\n");
+                       "\nor read the corresponding README.md and Copying.txt files distributed along with this program.\n" << sync_endl;
       else if (!token.empty() && token[0] != '#')
-        /*
-        Old way by Stockfish developers
-
-
           sync_cout << "Unknown command: '" << cmd << "'. Type help for more information." << sync_endl;
-        */
-        OutputsQueue::getInstance().send(string("Unknown command: '") + string(cmd)  + string("'. Type help for more information.") + "\n");
 
   } while (token != "quit" && argc == 1); // The command-line arguments are one-shot
 }

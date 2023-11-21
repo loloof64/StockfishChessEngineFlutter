@@ -29,8 +29,6 @@
 #include "uci.h"
 #include "syzygy/tbprobe.h"
 
-#include "../../commands_queue.h"
-
 using std::string;
 
 namespace Stockfish {
@@ -110,27 +108,6 @@ std::ostream& operator<<(std::ostream& os, const OptionsMap& om) {
           }
 
   return os;
-}
-
-// added by loloof64
-void print(const OptionsMap& om) {
-  for (size_t idx = 0; idx < om.size(); ++idx)
-      for (const auto& it : om)
-          if (it.second.idx == idx)
-          {
-              const Option& o = it.second;
-              OutputsQueue::getInstance().send(std::string("\noption name ") + it.first + std::string(" type ") + o.type);
-
-              if (o.type == "string" || o.type == "check" || o.type == "combo")
-                  OutputsQueue::getInstance().send(std::string(" default ") + o.defaultValue);
-
-              if (o.type == "spin")
-                  OutputsQueue::getInstance().send(std::string(" default ") + std::to_string(int(stof(o.defaultValue)))
-                     + std::string(" min ")  +   std::to_string(o.min)
-                     + std::string(" max ")  +   std::to_string(o.max));
-
-              break;
-          }
 }
 
 

@@ -1,8 +1,8 @@
-// Using code from https://github.com/ArjanAswal/Stockfish/blob/master/lib/src/stockfish.dart
-
+// Using code from https://github.com/jusax23/flutter_stockfish_plugin
 import 'dart:async';
 import 'dart:ffi';
 import 'dart:io';
+import 'dart:convert';
 import 'dart:isolate';
 import 'dart:developer' as developer;
 
@@ -13,24 +13,21 @@ import 'stockfish_bindings_generated.dart';
 import 'stockfish_state.dart';
 
 const String _libName = 'stockfish';
-const String _releaseType = kDebugMode ? 'Debug' : 'Release';
+//const String _releaseType = kDebugMode ? 'Debug' : 'Release';
 
 /// The dynamic library in which the symbols for [StockfishChessEngineBindings] can be found.
 final DynamicLibrary _dylib = () {
-  if (Platform.isMacOS || Platform.isIOS) {
-    return DynamicLibrary.open('$_libName.framework/$_libName');
-  }
   if (Platform.isAndroid) {
     return DynamicLibrary.open('lib$_libName.so');
+  }
+  if (Platform.isWindows) {
+    return DynamicLibrary.open('$_libName.dll');
   }
   if (Platform.isLinux) {
     return DynamicLibrary.open(
         '${File(Platform.resolvedExecutable).parent.parent.path}/plugins/stockfish_chess_engine/shared/lib$_libName.so');
   }
-  if (Platform.isWindows) {
-    return DynamicLibrary.open(
-        '${File(Platform.resolvedExecutable).parent.parent.parent.path}/plugins/stockfish_chess_engine/shared/$_releaseType/$_libName.dll');
-  }
+
   throw UnsupportedError('Unknown platform: ${Platform.operatingSystem}');
 }();
 
@@ -104,14 +101,18 @@ class Stockfish {
       throw StateError('Stockfish is not ready ($stateValue)');
     }
 
-    final unicodePointer = line.toNativeUtf8();
-    _bindings.stockfish_stdin_write(unicodePointer);
+    final unicodePointer = '$line\n'.toNativeUtf8();
+    final pointer = unicodePointer.cast<Char>();
+    _bindings.stockfish_stdin_write(pointer);
     calloc.free(unicodePointer);
   }
 
   /// Stops the C++ engine.
   void dispose() {
-    stdin = 'quit';
+    final stateValue = _state.value;
+    if (stateValue == StockfishState.ready) {
+      stdin = 'quit';
+    }
   }
 
   void _cleanUp(int exitCode) {
@@ -162,7 +163,7 @@ void _isolateMain(SendPort mainPort) {
   developer.log('nativeMain returns $exitCode', name: 'Stockfish');
 }
 
-void _isolateStdout(SendPort stdoutPort) {
+void _isolateStdout(SendPort stdoutPort) async {
   String previous = '';
 
   while (true) {
@@ -173,7 +174,17 @@ void _isolateStdout(SendPort stdoutPort) {
       return;
     }
 
-    final data = previous + pointer.toDartString();
+    Uint8List newContentCharList;
+
+    final newContentLength = pointer.cast<Utf8>().length;
+    newContentCharList = Uint8List.view(
+        pointer.cast<Uint8>().asTypedList(newContentLength).buffer,
+        0,
+        newContentLength);
+
+    final newContent = utf8.decode(newContentCharList);
+
+    final data = previous + newContent;
     final lines = data.split('\n');
     previous = lines.removeLast();
     for (final line in lines) {

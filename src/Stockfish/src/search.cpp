@@ -16,19 +16,12 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-    Modified by loloof64
-    Replaced calls to sync_cout with calls to OutputsQueue::getInstance().send()
-*/
-
 #include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstring>   // For std::memset
 #include <iostream>
 #include <sstream>
-
-#include <string>
 
 #include "evaluate.h"
 #include "misc.h"
@@ -42,8 +35,6 @@
 #include "uci.h"
 #include "syzygy/tbprobe.h"
 #include "nnue/evaluate_nnue.h"
-
-#include "../../commands_queue.h"
 
 namespace Stockfish {
 
@@ -157,14 +148,8 @@ namespace {
             nodes += cnt;
             pos.undo_move(m);
         }
-        /*
-            Old way by Stockfish developers.
-
-            if (Root)
-                sync_cout << UCI::move(m, pos.is_chess960()) << ": " << cnt << sync_endl;
-        */
         if (Root)
-            OutputsQueue::getInstance().send(UCI::move(m, pos.is_chess960()) + ": " + std::to_string(cnt) + "\n");
+            sync_cout << UCI::move(m, pos.is_chess960()) << ": " << cnt << sync_endl;
     }
     return nodes;
   }
@@ -202,11 +187,7 @@ void MainThread::search() {
   if (Limits.perft)
   {
       nodes = perft<true>(rootPos, Limits.perft);
-      /*
-        Old way by Stockfish developpers
-        sync_cout << "\nNodes searched: " << nodes << "\n" << sync_endl;
-      */
-      OutputsQueue::getInstance().send(std::string("\nNodes searched: ") +  std::to_string(nodes) + "\n" + "\n");
+      sync_cout << "\nNodes searched: " << nodes << "\n" << sync_endl;
       return;
   }
 
@@ -219,14 +200,9 @@ void MainThread::search() {
   if (rootMoves.empty())
   {
       rootMoves.emplace_back(MOVE_NONE);
-      /* Old way by Stockfish developers
-        sync_cout << "info depth 0 score "
+      sync_cout << "info depth 0 score "
                 << UCI::value(rootPos.checkers() ? -VALUE_MATE : VALUE_DRAW)
                 << sync_endl;
-      */
-      OutputsQueue::getInstance().send(std::string("info depth 0 score ")
-                + std::string(UCI::value(rootPos.checkers() ? -VALUE_MATE : VALUE_DRAW))
-                + "\n");
   }
   else
   {
@@ -268,35 +244,15 @@ void MainThread::search() {
   bestPreviousAverageScore = bestThread->rootMoves[0].averageScore;
 
   // Send again PV info if we have a new best thread
-  /*
-    Old way by Stockfish developers
-    if (bestThread != this)
+  if (bestThread != this)
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth) << sync_endl;
 
-  */
-  if (bestThread != this)
-      OutputsQueue::getInstance().send(std::string(UCI::pv(bestThread->rootPos, bestThread->completedDepth)) + "\n");
+  sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
 
-  /* Old way by Stockfish developers
-    sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
-  */
-  OutputsQueue::getInstance().send(std::string("bestmove ") + std::string(UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960())));
-
-  /*
-    Old way by Stockfish developers
-
-    if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
-      std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
-  */
   if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
-      OutputsQueue::getInstance().send(std::string(" ponder ") + std::string(UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960())));
+      fakeout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
 
-  /*
-    Old way by Stockfish developers
-  
-    std::cout << sync_endl;
-  */
-  OutputsQueue::getInstance().send(std::string("\n"));
+  fakeout << sync_endl;
 }
 
 
@@ -432,12 +388,7 @@ void Thread::search() {
                   && multiPV == 1
                   && (bestValue <= alpha || bestValue >= beta)
                   && Time.elapsed() > 3000)
-                /*
-                    Old way by Stockfish developers
-
-                    sync_cout << UCI::pv(rootPos, rootDepth) << sync_endl;
-                */
-                OutputsQueue::getInstance().send(std::string(UCI::pv(rootPos, rootDepth)) + "\n");
+                  sync_cout << UCI::pv(rootPos, rootDepth) << sync_endl;
 
               // In case of failing low/high increase aspiration window and
               // re-search, otherwise exit the loop.
@@ -468,13 +419,7 @@ void Thread::search() {
 
           if (    mainThread
               && (Threads.stop || pvIdx + 1 == multiPV || Time.elapsed() > 3000))
-            /*
-                Old way by Stockfish developers
-
-
               sync_cout << UCI::pv(rootPos, rootDepth) << sync_endl;
-            */
-            OutputsQueue::getInstance().send(std::string(UCI::pv(rootPos, rootDepth)) + "\n");
       }
 
       if (!Threads.stop)
@@ -1004,15 +949,9 @@ moves_loop: // When in check, search starts here
       ss->moveCount = ++moveCount;
 
       if (rootNode && thisThread == Threads.main() && Time.elapsed() > 3000)
-        /* Old way by Stockfish developers
-    
-            sync_cout << "info depth " << depth
+          sync_cout << "info depth " << depth
                     << " currmove " << UCI::move(move, pos.is_chess960())
                     << " currmovenumber " << moveCount + thisThread->pvIdx << sync_endl;
-        */
-          OutputsQueue::getInstance().send(std::string("info depth ") +  std::to_string(depth)
-                    + std::string(" currmove ") + UCI::move(move, pos.is_chess960())
-                    + std::string(" currmovenumber ")  + std::to_string(moveCount + thisThread->pvIdx) + "\n");
       if (PvNode)
           (ss+1)->pv = nullptr;
 

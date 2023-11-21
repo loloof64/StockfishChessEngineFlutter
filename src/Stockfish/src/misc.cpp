@@ -75,9 +75,9 @@ namespace {
 /// Version number or dev.
 constexpr string_view version = "16";
 
-/// Our fancy logging facility. The trick here is to replace cin.rdbuf() and
-/// cout.rdbuf() with two Tie objects that tie cin and cout to a file stream. We
-/// can toggle the logging of std::cout and std:cin at runtime whilst preserving
+/// Our fancy logging facility. The trick here is to replace fakein.rdbuf() and
+/// fakeout.rdbuf() with two Tie objects that tie cin and cout to a file stream. We
+/// can toggle the logging of fakeout and fakein at runtime whilst preserving
 /// usual I/O functionality, all without changing a single line of code!
 /// Idea from http://groups.google.com/group/comp.lang.c++/msg/1d941c0f26ea0d81
 
@@ -105,7 +105,7 @@ struct Tie: public streambuf { // MSVC requires split streambuf for cin and cout
 
 class Logger {
 
-  Logger() : in(cin.rdbuf(), file.rdbuf()), out(cout.rdbuf(), file.rdbuf()) {}
+  Logger() : in(fakein.rdbuf(), file.rdbuf()), out(fakeout.rdbuf(), file.rdbuf()) {}
  ~Logger() { start(""); }
 
   ofstream file;
@@ -118,8 +118,8 @@ public:
 
     if (l.file.is_open())
     {
-        cout.rdbuf(l.out.buf);
-        cin.rdbuf(l.in.buf);
+        fakeout.rdbuf(l.out.buf);
+        fakein.rdbuf(l.in.buf);
         l.file.close();
     }
 
@@ -133,8 +133,8 @@ public:
             exit(EXIT_FAILURE);
         }
 
-        cin.rdbuf(&l.in);
-        cout.rdbuf(&l.out);
+        fakein.rdbuf(&l.in);
+        fakeout.rdbuf(&l.out);
     }
   }
 };
@@ -360,14 +360,14 @@ void dbg_print() {
             std::cerr << "Hit #" << i
                       << ": Total " << n << " Hits " << hit[i][1]
                       << " Hit Rate (%) " << 100.0 * E(hit[i][1])
-                      << std::endl;
+                      << fakeendl;
 
     for (int i = 0; i < MaxDebugSlots; ++i)
         if ((n = mean[i][0]))
         {
             std::cerr << "Mean #" << i
                       << ": Total " << n << " Mean " << E(mean[i][1])
-                      << std::endl;
+                      << fakeendl;
         }
 
     for (int i = 0; i < MaxDebugSlots; ++i)
@@ -376,7 +376,7 @@ void dbg_print() {
             double r = sqrtl(E(stdev[i][2]) - sqr(E(stdev[i][1])));
             std::cerr << "Stdev #" << i
                       << ": Total " << n << " Stdev " << r
-                      << std::endl;
+                      << fakeendl;
         }
 
     for (int i = 0; i < MaxDebugSlots; ++i)
@@ -387,12 +387,12 @@ void dbg_print() {
                           * sqrtl(E(correl[i][4]) - sqr(E(correl[i][3]))));
             std::cerr << "Correl. #" << i
                       << ": Total " << n << " Coefficient " << r
-                      << std::endl;
+                      << fakeendl;
         }
 }
 
 
-/// Used to serialize access to std::cout to avoid multiple threads writing at
+/// Used to serialize access to fakeout to avoid multiple threads writing at
 /// the same time.
 
 std::ostream& operator<<(std::ostream& os, SyncCout sc) {
@@ -591,7 +591,7 @@ void aligned_large_pages_free(void* mem) {
       DWORD err = GetLastError();
       std::cerr << "Failed to free large page memory. Error code: 0x"
                 << std::hex << err
-                << std::dec << std::endl;
+                << std::dec << fakeendl;
       exit(EXIT_FAILURE);
   }
 }
@@ -751,10 +751,10 @@ void init([[maybe_unused]] int argc, char* argv[]) {
 #ifdef _WIN32
     pathSeparator = "\\";
   #ifdef _MSC_VER
-    // Under windows argv[0] may not have the extension. Also _get_pgmptr() had
+    // Under windows argv[0] may not have the extension. Also fake_get_pgmptr() had
     // issues in some windows 10 versions, so check returned values carefully.
     char* pgmptr = nullptr;
-    if (!_get_pgmptr(&pgmptr) && pgmptr != nullptr && *pgmptr)
+    if (!fake_get_pgmptr(&pgmptr) && pgmptr != nullptr && *pgmptr)
         argv0 = pgmptr;
   #endif
 #else

@@ -206,12 +206,9 @@ private:
 };
 
 std::ostream& operator<<(std::ostream& os, const Position& pos);
-// added by loloof64
-extern void send_output_string(const Position& pos);
 
 inline Color Position::side_to_move() const {
   return sideToMove;
-  // removed by loloof64 : print
 }
 
 inline Piece Position::piece_on(Square s) const {

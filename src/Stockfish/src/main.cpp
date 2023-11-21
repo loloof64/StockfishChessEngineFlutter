@@ -16,10 +16,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-  Modified by loloof64  
-*/
-
 #include <iostream>
 
 #include "bitboard.h"
@@ -32,18 +28,11 @@
 #include "tt.h"
 #include "uci.h"
 
-#include "../../commands_queue.h"
-
 using namespace Stockfish;
 
 int main(int argc, char* argv[]) {
 
-  /*
-    Old way by Stockfish developers
-    
-    std::cout << engine_info() << std::endl;
-  */
-  OutputsQueue::getInstance().send(engine_info() + "\n");
+  fakeout << engine_info() << fakeendl;
 
   CommandLine::init(argc, argv);
   UCI::init(Options);

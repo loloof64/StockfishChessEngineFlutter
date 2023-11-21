@@ -72,7 +72,7 @@ void TranspositionTable::resize(size_t mbSize) {
   if (!table)
   {
       std::cerr << "Failed to allocate " << mbSize
-                << "MB for transposition table." << std::endl;
+                << "MB for transposition table." << fakeendl;
       exit(EXIT_FAILURE);
   }
 

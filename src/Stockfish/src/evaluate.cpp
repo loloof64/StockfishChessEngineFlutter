@@ -16,11 +16,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-Modified by loloof64
-Replaced calls to sync_cout with a call to OutputsQueue::getInstance().send()
-*/
-
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
@@ -42,8 +37,6 @@ Replaced calls to sync_cout with a call to OutputsQueue::getInstance().send()
 #include "uci.h"
 #include "incbin/incbin.h"
 #include "nnue/evaluate_nnue.h"
-
-#include "../../commands_queue.h"
 
 // Macro to embed the default efficiently updatable neural network (NNUE) file
 // data in the engine binary (using incbin.h, by Dale Weiler).
@@ -138,38 +131,19 @@ namespace Eval {
         string msg4 = "The default net can be downloaded from: https://tests.stockfishchess.org/api/nn/" + std::string(EvalFileDefaultName);
         string msg5 = "The engine will be terminated now.";
 
-        /*
-        Old way by Stockfish developers
-            sync_cout << "info string ERROR: " << msg1 << sync_endl;
-            sync_cout << "info string ERROR: " << msg2 << sync_endl;
-            sync_cout << "info string ERROR: " << msg3 << sync_endl;
-            sync_cout << "info string ERROR: " << msg4 << sync_endl;
-            sync_cout << "info string ERROR: " << msg5 << sync_endl;
-        */
-
-        // New way by loloof64
-        OutputsQueue::getInstance().send(string("info string ERROR: ") + msg1 + "\n");
-        OutputsQueue::getInstance().send(string("info string ERROR: ") + msg2 + "\n");
-        OutputsQueue::getInstance().send(string("info string ERROR: ") + msg3 + "\n");
-        OutputsQueue::getInstance().send(string("info string ERROR: ") + msg4 + "\n");
-        OutputsQueue::getInstance().send(string("info string ERROR: ") + msg5 + "\n");
-        //---------------------
+        sync_cout << "info string ERROR: " << msg1 << sync_endl;
+        sync_cout << "info string ERROR: " << msg2 << sync_endl;
+        sync_cout << "info string ERROR: " << msg3 << sync_endl;
+        sync_cout << "info string ERROR: " << msg4 << sync_endl;
+        sync_cout << "info string ERROR: " << msg5 << sync_endl;
 
         exit(EXIT_FAILURE);
     }
 
-    /*
-        Old way by Stockfish developers
-
-        if (useNNUE)
-            sync_cout << "info string NNUE evaluation using " << eval_file << " enabled" << sync_endl;
-        else
-            sync_cout << "info string classical evaluation enabled" << sync_endl;
-    */
     if (useNNUE)
-        OutputsQueue::getInstance().send(string("info string NNUE evaluation using ") + string(eval_file) + " enabled" + "\n");
+        sync_cout << "info string NNUE evaluation using " << eval_file << " enabled" << sync_endl;
     else
-        OutputsQueue::getInstance().send(string("info string classical evaluation enabled") + "\n");
+        sync_cout << "info string classical evaluation enabled" << sync_endl;
   }
 }
 

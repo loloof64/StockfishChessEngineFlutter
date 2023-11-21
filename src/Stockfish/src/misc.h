@@ -67,8 +67,8 @@ private:
 enum SyncCout { IO_LOCK, IO_UNLOCK };
 std::ostream& operator<<(std::ostream&, SyncCout);
 
-#define sync_cout std::cout << IO_LOCK
-#define sync_endl std::endl << IO_UNLOCK
+#define sync_cout fakeout << IO_LOCK
+#define sync_endl fakeendl << IO_UNLOCK
 
 
 // align_ptr_up() : get the first aligned element of an array.

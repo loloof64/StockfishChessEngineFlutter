@@ -1,57 +1,66 @@
+//Taken from https://github.com/jusax23/flutter_stockfish_plugin
+
+#include <cstdio>
+#include <iostream>
+#ifdef _WIN32
+#include <fcntl.h>
+#include <io.h>
+#ifdef _WIN64
+#define ssize_t __int64
+#else
+#define ssize_t long
+#endif
+#else
+#include <unistd.h>
+#endif
+
+#define BUFFER_SIZE 1024
+
 #include "stockfish.h"
 
-#include <thread>
-#include <chrono>
-#include <optional>
+#include "fixes.h"
 
-#include "Stockfish/src/bitboard.h"
-#include "Stockfish/src/endgame.h"
-#include "Stockfish/src/position.h"
-#include "Stockfish/src/search.h"
-#include "Stockfish/src/thread.h"
-#include "Stockfish/src/tt.h"
-#include "Stockfish/src/uci.h"
-#include "Stockfish/src/syzygy/tbprobe.h"
-
-#include "commands_queue.h"
-
-#define MAX_SIZE 200
+const char *QUITOK = "quit\n";
 
 int main(int, char **);
 
-const char *QUITOK = "quitok\n";
-char RESULT[MAX_SIZE+1];
+int stockfish_main() {
+    int argc = 1;
+    char *argv[] = {(char *)""};
+    int exitCode = main(argc, argv);
 
-int stockfish_main()
-{
-  int argc = 1;
-  char *argv[] = {(char *) ""};
-  int exitCode = main(argc, argv);
+    fakeout << QUITOK << "\n";
 
-  InputsQueue::getInstance().send(QUITOK);
+#if _WIN32
+    Sleep(100);
+#else
+    usleep(100);
+#endif
 
-  return exitCode;
+    fakeout.close();
+    fakein.close();
+
+    return exitCode;
 }
 
-void stockfish_stdin_write(char *command)
-{
-  InputsQueue::getInstance().send(std::string(command));
+ssize_t stockfish_stdin_write(char *data) {
+    std::string val(data);
+    fakein << val << fakeendl;
+    return val.length();
 }
 
-const char *stockfish_stdout_read()
-{
-  using namespace std::chrono_literals;
-  std::optional<std::string> output;
+std::string data;
+char buffer[BUFFER_SIZE + 1];
 
-  while (true) {
-    output = OutputsQueue::getInstance().receive();
-    if (output.has_value()) {
-      break;
+char* stockfish_stdout_read() {
+    if (getline(fakeout, data)) {
+        size_t len = data.length();
+        size_t i;
+        for (i = 0; i < len && i < BUFFER_SIZE; i++) {
+            buffer[i] = data[i];
+        }
+        buffer[i] = 0;
+        return buffer;
     }
-    std::this_thread::sleep_for(500ms);
-  }
-
-  auto output_str = output.value().c_str();
-  strncpy(RESULT, output_str, MAX_SIZE);
-  return RESULT;
+    return nullptr;
 }

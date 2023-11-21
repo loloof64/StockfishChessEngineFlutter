@@ -59,3 +59,4 @@ More on https://pub.dev/packages/ffigen for the prerequesites per OS.
 
 * Using source code from [Stockfish](https://stockfishchess.org).
 * Using source code from [Flutter Stockfish](https://github.com/ArjanAswal/Stockfish).
+* Using source code from [Flutter Stockfish Plugin](https://github.com/jusax23/flutter_stockfish_plugin)

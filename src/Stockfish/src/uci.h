@@ -16,10 +16,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-Modified by loloof64
-*/
-
 #ifndef UCI_H_INCLUDED
 #define UCI_H_INCLUDED
 
@@ -71,8 +67,6 @@ public:
 
 private:
   friend std::ostream& operator<<(std::ostream&, const OptionsMap&);
-  // added by loloof64
-  friend void print(const OptionsMap&);
 
   std::string defaultValue, currentValue, type;
   int min, max;

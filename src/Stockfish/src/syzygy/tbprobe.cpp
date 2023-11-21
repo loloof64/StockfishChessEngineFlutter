@@ -16,10 +16,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-Modified by loloof64
-*/
-
 #include <algorithm>
 #include <atomic>
 #include <cstdint>
@@ -41,8 +37,6 @@ Modified by loloof64
 #include "../uci.h"
 
 #include "tbprobe.h"
-
-#include "../../../commands_queue.h"
 
 #ifndef _WIN32
 #include <fcntl.h>
@@ -222,7 +216,7 @@ public:
 
         if (statbuf.st_size % 64 != 16)
         {
-            std::cerr << "Corrupt tablebase file " << fname << std::endl;
+            std::cerr << "Corrupt tablebase file " << fname << fakeendl;
             exit(EXIT_FAILURE);
         }
 
@@ -235,7 +229,7 @@ public:
 
         if (*baseAddress == MAP_FAILED)
         {
-            std::cerr << "Could not mmap() " << fname << std::endl;
+            std::cerr << "Could not mmap() " << fname << fakeendl;
             exit(EXIT_FAILURE);
         }
 #else
@@ -251,7 +245,7 @@ public:
 
         if (size_low % 64 != 16)
         {
-            std::cerr << "Corrupt tablebase file " << fname << std::endl;
+            std::cerr << "Corrupt tablebase file " << fname << fakeendl;
             exit(EXIT_FAILURE);
         }
 
@@ -260,7 +254,7 @@ public:
 
         if (!mmap)
         {
-            std::cerr << "CreateFileMapping() failed" << std::endl;
+            std::cerr << "CreateFileMapping() failed" << fakeendl;
             exit(EXIT_FAILURE);
         }
 
@@ -270,7 +264,7 @@ public:
         if (!*baseAddress)
         {
             std::cerr << "MapViewOfFile() failed, name = " << fname
-                      << ", error = " << GetLastError() << std::endl;
+                      << ", error = " << GetLastError() << fakeendl;
             exit(EXIT_FAILURE);
         }
 #endif
@@ -281,7 +275,7 @@ public:
 
         if (memcmp(data, Magics[type == WDL], 4))
         {
-            std::cerr << "Corrupted table in file " << fname << std::endl;
+            std::cerr << "Corrupted table in file " << fname << fakeendl;
             unmap(*baseAddress, *mapping);
             return *baseAddress = nullptr, nullptr;
         }
@@ -450,7 +444,7 @@ class TBTables {
                 homeBucket = otherHomeBucket;
             }
         }
-        std::cerr << "TB hash table size too low!" << std::endl;
+        std::cerr << "TB hash table size too low!" << fakeendl;
         exit(EXIT_FAILURE);
     }
 
@@ -1407,12 +1401,7 @@ void Tablebases::init(const std::string& paths) {
         }
     }
 
-    /*
-        Old ways by Stockfish developers
-
-        sync_cout << "info string Found " << TBTables.size() << " tablebases" << sync_endl;
-    */
-    OutputsQueue::getInstance().send(std::string("info string Found ") + std::to_string(TBTables.size()) + std::string(" tablebases") + "\n");
+    sync_cout << "info string Found " << TBTables.size() << " tablebases" << sync_endl;
 }
 
 // Probe the WDL table for a particular position.
