@@ -1,7 +1,9 @@
 ## 0.5.0
 
-* upgraded stockfish to version 16
-* fixed compilation errors on Android
+* get build updated so that the code compiles fine
+  * bump ndk version
+  * use java 17 instead of java 8
+  * add namespace in build.gradle
 
 ## 0.4.1
 
