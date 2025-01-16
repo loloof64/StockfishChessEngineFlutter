@@ -1,10 +1,11 @@
-```dart
 import 'dart:async';
 
-import 'package:clipboard/clipboard.dart';
+import 'package:editable_chess_board/editable_chess_board.dart';
+import 'package:example/edit_position_page.dart';
+import 'package:example/fen_validation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:chess/chess.dart' as chess_lib;
+import 'package:simple_chess_board/widgets/chessboard.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'package:stockfish_chess_engine/stockfish.dart';
@@ -17,7 +18,7 @@ void main() {
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   MyAppState createState() => MyAppState();
@@ -25,8 +26,7 @@ class MyApp extends StatefulWidget {
 
 class MyAppState extends State<MyApp> with WindowListener {
   late Stockfish _stockfish;
-  final _fenController = TextEditingController(
-      text: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+  String _fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
   late StreamSubscription _stockfishOutputSubsciption;
   var _timeMs = 1000.0;
   var _nextMove = '';
@@ -71,12 +71,31 @@ class MyAppState extends State<MyApp> with WindowListener {
     }
   }
 
-  void _pasteFen() {
-    FlutterClipboard.paste().then((value) {
+  void _editPosition(BuildContext context) async {
+    final initialFen = isStrictlyValidFEN(_fen)
+        ? _fen
+        : 'RNBQKBNR/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+    final controller = PositionController(initialFen);
+    final resultFen = await Navigator.of(context)
+        .push(MaterialPageRoute<String>(builder: (context) {
+      return EditPositionPage(
+        positionController: controller,
+      );
+    }));
+    if (resultFen != null) {
       setState(() {
-        _fenController.text = value;
+        _fen = resultFen;
       });
-    });
+      if (!isStrictlyValidFEN(_fen)) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Illegal position : so no changes made !'),
+          backgroundColor: Colors.red,
+        ));
+        setState(() {
+          _fen = initialFen;
+        });
+      }
+    }
   }
 
   void _updateThinkingTime(double newValue) {
@@ -85,14 +104,9 @@ class MyAppState extends State<MyApp> with WindowListener {
     });
   }
 
-  bool _validPosition() {
-    final chess = chess_lib.Chess();
-    return chess.load(_fenController.text.trim());
-  }
-
   void _computeNextMove() {
-    if (!_validPosition()) {
-      final message = "Illegal position: '${_fenController.text.trim()}' !\n";
+    if (!isStrictlyValidFEN(_fen)) {
+      final message = "Illegal position: '$_fen' !\n";
       setState(() {
         _stockfishOutputText = message;
       });
@@ -101,7 +115,7 @@ class MyAppState extends State<MyApp> with WindowListener {
     setState(() {
       _stockfishOutputText = '';
     });
-    _stockfish.stdin = 'position fen ${_fenController.text.trim()}';
+    _stockfish.stdin = 'position fen $_fen';
     _stockfish.stdin = 'go movetime ${_timeMs.toInt()}';
   }
 
@@ -168,16 +182,27 @@ class MyAppState extends State<MyApp> with WindowListener {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              TextField(
-                controller: _fenController,
-                decoration: const InputDecoration(
-                  hintText: 'Position FEN value',
-                  border: OutlineInputBorder(),
+              SizedBox(
+                width: 130,
+                height: 130,
+                child: SimpleChessBoard(
+                  engineThinking: false,
+                  fen: _fen,
+                  whitePlayerType: PlayerType.computer,
+                  blackPlayerType: PlayerType.computer,
+                  blackSideAtBottom: false,
+                  cellHighlights: {},
+                  chessBoardColors: ChessBoardColors(),
+                  onMove: ({required move}) => {},
+                  onPromote: () => Future.value(null),
+                  onPromotionCommited:
+                      ({required moveDone, required pieceType}) => {},
+                  onTap: ({required cellCoordinate}) => {},
                 ),
               ),
               ElevatedButton(
-                onPressed: _pasteFen,
-                child: const Text('Coller FEN'),
+                onPressed: () => _editPosition(context),
+                child: const Text('Edit position'),
               ),
               Slider(
                 value: _timeMs,
@@ -232,4 +257,3 @@ class MyAppState extends State<MyApp> with WindowListener {
     );
   }
 }
-```
