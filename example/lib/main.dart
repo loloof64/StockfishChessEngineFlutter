@@ -1,15 +1,15 @@
 import 'dart:async';
 
 import 'package:editable_chess_board/editable_chess_board.dart';
-import 'package:example/edit_position_page.dart';
-import 'package:example/fen_validation.dart';
+import './edit_position_page.dart';
+import './fen_validation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:simple_chess_board/widgets/chessboard.dart';
 import 'package:window_manager/window_manager.dart';
 
-import 'package:stockfish_chess_engine/stockfish.dart';
-import 'package:stockfish_chess_engine/stockfish_state.dart';
+import 'package:stockfish_chess_engine/stockfish_chess_engine.dart';
+import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
 void main() {
   runApp(const MaterialApp(
@@ -87,6 +87,7 @@ class MyAppState extends State<MyApp> with WindowListener {
         _fen = resultFen;
       });
       if (!isStrictlyValidFEN(_fen)) {
+        if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Illegal position : so no changes made !'),
           backgroundColor: Colors.red,
@@ -125,7 +126,7 @@ class MyAppState extends State<MyApp> with WindowListener {
       return;
     }
     _stockfishOutputSubsciption.cancel();
-    _stockfish.stdin = 'quit';
+    _stockfish.dispose();
     await Future.delayed(const Duration(milliseconds: 200));
     setState(() {});
   }

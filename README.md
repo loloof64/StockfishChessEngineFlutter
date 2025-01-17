@@ -34,19 +34,19 @@ You can see an example usage in example folder.
 
 ## Important notes
 
-* You **must** check the position validity before sending it to stdin, otherwise program will crash on illegal position ! For that, you can use the [chess](https://pub.dev/packages/chess) package.
+- You **must** check the position validity before sending it to stdin, otherwise program will crash on illegal position ! For that, you can use the [chess](https://pub.dev/packages/chess) package.
 
-* As the library creates two isolates, you must dispose Stockfish before perfoming an hot reload / hot restart, and then creating a new Stockfish instance.
+- As the library creates two isolates, you must dispose Stockfish before perfoming an hot reload / hot restart, and then creating a new Stockfish instance.
 
 ## For stockfish chess engine developpers
 
-1. Run `flutter pub get`.
-2. Uncomment line `#define _ffigen` on top of src/stockfish.h (for the ffi generation to pass).
-3. Run command `flutter pub run ffigen --config ffigen.yaml`.
-More on https://pub.dev/packages/ffigen for the prerequesites per OS.
-4. Comment line `#define _ffigen` in src/stockfish.h (otherwise Stockfish engine compilation will pass but be incorrect).
-5. In the file lib/stockfish_bindings_generated.dart, add the following import line : `import 'package:ffi/ffi.dart';`
-6. In the same file, replace Pointer<ffi.Char> by Pointer<Utf8>
+1. Adjust the path of "llvm-path" in file **ffigen.yaml**
+2. Run `flutter pub get`.
+3. Uncomment line `#define _ffigen` on top of src/stockfish.h (for the ffi generation to pass).
+4. Run command `dart run ffigen --config ffigen.yaml`.
+   More on https://pub.dev/packages/ffigen for the prerequesites per OS.
+5. Comment line `#define _ffigen` in src/stockfish.h (otherwise Stockfish engine compilation will pass but be incorrect).
+6. In the file lib/stockfish_bindings_generated.dart, add the following import line : `import 'package:ffi/ffi.dart';`
 
 ### Changing the downloaded NNUE file
 
@@ -57,6 +57,6 @@ More on https://pub.dev/packages/ffigen for the prerequesites per OS.
 
 ## Credits
 
-* Using source code from [Stockfish](https://stockfishchess.org).
-* Using source code from [Flutter Stockfish](https://github.com/ArjanAswal/Stockfish).
-* Using source code from [Flutter Stockfish Plugin](https://github.com/jusax23/flutter_stockfish_plugin)
+- Using source code from [Stockfish](https://stockfishchess.org).
+- Using source code from [Flutter Stockfish](https://github.com/ArjanAswal/Stockfish).
+- Using source code from [Flutter Stockfish Plugin](https://github.com/jusax23/flutter_stockfish_plugin)

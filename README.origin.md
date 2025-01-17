@@ -1,14 +1,14 @@
 # stockfish_chess_engine
 
-Use Stockfish chess engine in your Flutter project.
+Use Stockfish chess engine directly in your Flutter project.
 
 ## Getting Started
 
-This project is a starting point for a Flutter 
-[FFI plugin](https://docs.flutter.dev/development/platform-integration/c-interop),
+This project is a starting point for a Flutter
+[FFI plugin](https://flutter.dev/to/ffi-package),
 a specialized package that includes native code directly invoked with Dart FFI.
 
-## Project stucture
+## Project structure
 
 This template uses the following structure:
 
@@ -21,7 +21,7 @@ This template uses the following structure:
 * platform folders (`android`, `ios`, `windows`, etc.): Contains the build files
   for building and bundling the native code library with the platform application.
 
-## Buidling and bundling native code
+## Building and bundling native code
 
 The `pubspec.yaml` specifies FFI plugins as follows:
 
@@ -73,7 +73,7 @@ The native build systems that are invoked by FFI (and method channel) plugins ar
 To use the native code, bindings in Dart are needed.
 To avoid writing these by hand, they are generated from the header file
 (`src/stockfish_chess_engine.h`) by `package:ffigen`.
-Regenerate the bindings by running `flutter pub run ffigen --config ffigen.yaml`.
+Regenerate the bindings by running `dart run ffigen --config ffigen.yaml`.
 
 ## Invoking native code
 
@@ -87,6 +87,6 @@ For example, see `sumAsync` in `lib/stockfish_chess_engine.dart`.
 ## Flutter help
 
 For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
+[online documentation](https://docs.flutter.dev), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 

@@ -9,10 +9,10 @@ import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import 'package:ffi/ffi.dart';
 
-import 'stockfish_bindings_generated.dart';
-import 'stockfish_state.dart';
+import 'stockfish_chess_engine_bindings_generated.dart';
+import 'stockfish_chess_engine_state.dart';
 
-const String _libName = 'stockfish';
+const String _libName = 'loloof64_stockfish';
 //const String _releaseType = kDebugMode ? 'Debug' : 'Release';
 
 /// The dynamic library in which the symbols for [StockfishChessEngineBindings] can be found.
@@ -113,6 +113,7 @@ class Stockfish {
     if (stateValue == StockfishState.ready) {
       stdin = 'quit';
     }
+    _cleanUp(0);
   }
 
   void _cleanUp(int exitCode) {

@@ -1,28 +1,16 @@
-//#define _ffigen
+// #define _ffigen
 
-// Taken from https://github.com/jusax23/flutter_stockfish_plugin
-
-#ifdef _WIN32
-#include <BaseTsd.h>
-#else
-#include <stdint.h>
-#endif
-
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#ifdef _WIN32
+#if _WIN32
 #include <windows.h>
+#include <BaseTsd.h>    
 #else
-#include <pthread.h>
-#include <unistd.h>
+#include <sys/types.h>
 #endif
 
-#ifdef _WIN32
+#if _WIN32
 #define FFI_PLUGIN_EXPORT __declspec(dllexport)
 #else
-#define FFI_PLUGIN_EXPORT __attribute__((visibility("default"))) __attribute__((used))
+#define FFI_PLUGIN_EXPORT
 #endif
 
 // Stockfish main loop.
@@ -37,7 +25,7 @@ extern "C"
 #endif
 FFI_PLUGIN_EXPORT ssize_t stockfish_stdin_write(char *data);
 
-// Reading Stockfish STDOUT
+// Reading Stockfish STDOUT.
 #ifndef _ffigen
 extern "C"
 #endif
