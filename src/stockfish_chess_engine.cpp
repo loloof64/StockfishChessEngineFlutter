@@ -3,12 +3,6 @@
 #include "fixes.h"
 #include <string>
 
-#if _WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
-#endif
-
 #define BUFFER_SIZE 1024
 
 const char *QUITOK = "quit\n";

@@ -2,9 +2,11 @@
 
 #if _WIN32
 #include <windows.h>
-#include <BaseTsd.h>    
+#include <stddef.h>
+typedef ptrdiff_t ssize_t; 
 #else
 #include <sys/types.h>
+#include <unistd.h>
 #endif
 
 #if _WIN32
