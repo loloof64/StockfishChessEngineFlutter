@@ -15,20 +15,25 @@ typedef ptrdiff_t ssize_t;
 #define FFI_PLUGIN_EXPORT
 #endif
 
-// Stockfish main loop.
 #ifndef _ffigen
-extern "C"
+extern "C" {
 #endif
+
+// Stockfish main loop.
+__attribute__((visibility("default")))
+__attribute__((used))
 FFI_PLUGIN_EXPORT int stockfish_main();
 
 // Writing to Stockfish STDIN.
-#ifndef _ffigen
-extern "C"
-#endif
+__attribute__((visibility("default")))
+__attribute__((used))
 FFI_PLUGIN_EXPORT ssize_t stockfish_stdin_write(char *data);
 
 // Reading Stockfish STDOUT.
-#ifndef _ffigen
-extern "C"
-#endif
+__attribute__((visibility("default")))
+__attribute__((used))
 FFI_PLUGIN_EXPORT char * stockfish_stdout_read();
+
+#ifndef _ffigen
+}
+#endif

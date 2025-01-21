@@ -9,32 +9,34 @@ set(CMAKE_CXX_STANDARD 17)
 file(GLOB_RECURSE cppPaths "Stockfish/src/*.cpp")
 set(NNUE_NAME nn-5af11540bbfe.nnue)
 
-add_library(loloof64_stockfish SHARED
+add_library(stockfish_chess_engine SHARED
   "stockfish_chess_engine.cpp"
-  "stream_fix.cpp"
-  "small_fixes.cpp"
+  "fixes/stream_fix.cpp"
+  "fixes/small_fixes.cpp"
   ${cppPaths}
 )
 
-set_target_properties(loloof64_stockfish PROPERTIES
+set_target_properties(stockfish_chess_engine PROPERTIES
   PUBLIC_HEADER stockfish_chess_engine.h
-  OUTPUT_NAME "loloof64_stockfish"
+  OUTPUT_NAME "stockfish_chess_engine"
 )
 
+target_compile_options(stockfish_chess_engine PRIVATE -fPIC)
+
 if(MSVC)
-    add_definitions(/FI"fixes.h")
+    add_definitions(/FI"fixes/fixes.h")
 else()
-    add_definitions(-include fixes.h)
+    add_definitions(-include "fixes/fixes.h")
 endif()
 
-target_compile_definitions(loloof64_stockfish PUBLIC DART_SHARED_LIB)
+target_compile_definitions(stockfish_chess_engine PUBLIC DART_SHARED_LIB)
 
 if (ANDROID)
   # Support Android 15 16k page size
-  target_link_options(loloof64_stockfish PRIVATE "-Wl,-z,max-page-size=16384")
+  target_link_options(stockfish_chess_engine PRIVATE "-Wl,-z,max-page-size=16384")
 endif()
 
-target_include_directories(loloof64_stockfish
+target_include_directories(stockfish_chess_engine
   PUBLIC
   "./"
 )

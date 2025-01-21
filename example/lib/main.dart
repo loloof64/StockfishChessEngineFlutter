@@ -138,7 +138,7 @@ class MyAppState extends State<MyApp> with WindowListener {
     setState(() {
       _stockfishOutputText = '';
     });
-    await Future.delayed(const Duration(milliseconds: 1100));
+    await Future.delayed(const Duration(milliseconds: 1500));
     _stockfish.stdin = 'uci';
     await Future.delayed(const Duration(milliseconds: 3000));
     _stockfish.stdin = 'isready';

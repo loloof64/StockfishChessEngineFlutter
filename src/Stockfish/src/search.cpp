@@ -36,6 +36,8 @@
 #include "syzygy/tbprobe.h"
 #include "nnue/evaluate_nnue.h"
 
+#include "../../fixes/fixes.h"
+
 namespace Stockfish {
 
 namespace Search {

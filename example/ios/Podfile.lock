@@ -1,0 +1,22 @@
+PODS:
+  - Flutter (1.0.0)
+  - stockfish_chess_engine (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - stockfish_chess_engine (from `.symlinks/plugins/stockfish_chess_engine/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  stockfish_chess_engine:
+    :path: ".symlinks/plugins/stockfish_chess_engine/ios"
+
+SPEC CHECKSUMS:
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  stockfish_chess_engine: 2c4b82b323cba27a0ab4871748df8d4ea882b966
+
+PODFILE CHECKSUM: 819463e6a0290f5a72f145ba7cde16e8b6ef0796
+
+COCOAPODS: 1.14.3

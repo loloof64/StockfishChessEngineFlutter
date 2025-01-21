@@ -27,6 +27,7 @@
 #include "thread.h"
 #include "tt.h"
 #include "uci.h"
+#include "../../fixes/fixes.h"
 
 using namespace Stockfish;
 

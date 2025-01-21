@@ -66,6 +66,8 @@ using fun8_t = bool(*)(HANDLE, BOOL, PTOKEN_PRIVILEGES, DWORD, PTOKEN_PRIVILEGES
 #include "misc.h"
 #include "thread.h"
 
+#include "../../fixes/fixes.h"
+
 using namespace std;
 
 namespace Stockfish {

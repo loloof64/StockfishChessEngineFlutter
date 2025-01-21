@@ -1,7 +1,9 @@
 #include "stockfish_chess_engine.h"
 
-#include "fixes.h"
+#include "fixes/fixes.h"
 #include <string>
+
+#include "Stockfish/src/main.cpp"
 
 #define BUFFER_SIZE 1024
 

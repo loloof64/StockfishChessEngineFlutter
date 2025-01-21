@@ -12,11 +12,15 @@ import 'package:ffi/ffi.dart';
 import 'stockfish_chess_engine_bindings_generated.dart';
 import 'stockfish_chess_engine_state.dart';
 
-const String _libName = 'loloof64_stockfish';
+const String _libName = 'stockfish_chess_engine';
 //const String _releaseType = kDebugMode ? 'Debug' : 'Release';
 
 /// The dynamic library in which the symbols for [StockfishChessEngineBindings] can be found.
 final DynamicLibrary _dylib = () {
+  if (Platform.isMacOS || Platform.isIOS) {
+    return DynamicLibrary.process();
+    //return DynamicLibrary.open('$_libName.framework/$_libName');
+  }
   if (Platform.isAndroid) {
     return DynamicLibrary.open('lib$_libName.so');
   }
@@ -27,7 +31,6 @@ final DynamicLibrary _dylib = () {
     return DynamicLibrary.open(
         '${File(Platform.resolvedExecutable).parent.parent.path}/plugins/stockfish_chess_engine/shared/lib$_libName.so');
   }
-
   throw UnsupportedError('Unknown platform: ${Platform.operatingSystem}');
 }();
 

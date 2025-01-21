@@ -28,6 +28,8 @@
 
 #include "types.h"
 
+#include "../../fixes/fixes.h"
+
 #define stringify2(x) #x
 #define stringify(x) stringify2(x)
 

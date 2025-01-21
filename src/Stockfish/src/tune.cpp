@@ -24,6 +24,8 @@
 #include "misc.h"
 #include "uci.h"
 
+#include "../../fixes/fixes.h"
+
 using std::string;
 
 namespace Stockfish {

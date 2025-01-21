@@ -48,6 +48,33 @@ You can see an example usage in example folder.
 5. Comment line `#define _ffigen` in src/stockfish.h (otherwise Stockfish engine compilation will pass but be incorrect).
 6. In the file lib/stockfish_bindings_generated.dart, add the following import line : `import 'package:ffi/ffi.dart';`
 
+### Changing Stockfish source files
+
+If you need to upgrade Stockfish source files, create a folder **Stockfish** inside **src** folder, copy the **src** folder from the stockfish sources into the new **Stockfish** folder.
+
+Also you need to make some more adaptive works :
+
+#### Adapting streams
+
+- replace all calls to `cout << #SomeContent# << endl` by `fakeout << #SomeContent# << fakeendl` (And ajust also calls to `cout.rdbuf()` by `fakeout.rdbuf()`) **But do not replace calls to sync_cout** add include to **../../fixes/fixes.h** in all related files (and adjust the include path accordingly)
+- proceed accordingly for `cin` : replace by `fakein`
+- and the same for `cerr`: replace by `fakeerr`
+- in **misc.h** replace
+
+```cpp
+#define sync_cout std::cout << IO_LOCK
+#define sync_endl std::endl << IO_UNLOCK
+```
+
+with
+
+```cpp
+#define sync_cout fakeout << IO_LOCK
+#define sync_endl fakeendl << IO_UNLOCK
+```
+
+and include **../../fixes/fixes.h** (if not already done)
+
 ### Changing the downloaded NNUE file
 
 1. Go to [Stockfish NNUE files page](https://tests.stockfishchess.org/nns) and select a reference from the list.
