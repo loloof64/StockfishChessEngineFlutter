@@ -15,7 +15,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  stockfish_chess_engine: 2c4b82b323cba27a0ab4871748df8d4ea882b966
+  stockfish_chess_engine: 973ebda18fbcb728aa1d1928fa6f64cae2a89c15
 
 PODFILE CHECKSUM: 819463e6a0290f5a72f145ba7cde16e8b6ef0796
 

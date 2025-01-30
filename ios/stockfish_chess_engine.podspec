@@ -27,7 +27,14 @@ Use Stockfish chess engine directly in your Flutter project.
     'OTHER_CFLAGS' => '-fvisibility=default -fvisibility-inlines-hidden',
   }
 
-  s.source_files = 'Classes/**/*.{h,c,cpp}', '../src/**/*.{h,c,cpp}'
+  s.pod_target_xcconfig = {
+    'DEFINES_MODULE' => 'YES',
+    'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386',
+    'OTHER_LDFLAGS' => '-lstdc++'
+  }
+
+  s.source_files = '../src/**/*.{h,c,cpp}', 'Classes/**/*.{h,c,cpp}'
+  s.public_header_files = '../src/**/*.h', 'Classes/**/*.h'
   
   #-- download nnue files
   s.script_phases = [
@@ -36,9 +43,10 @@ Use Stockfish chess engine directly in your Flutter project.
       :execution_position => :before_compile,
       :script => <<-SCRIPT
         # setup variables
+        SOURCES_FOLDER="${PODS_TARGET_SRCROOT}/.."
         NNUE_NAME="nn-5af11540bbfe.nnue"
         DOWNLOAD_BASE_URL="https://tests.stockfishchess.org/api/nn"
-        STOCKFISH_SOURCES_DIR="${PODS_ROOT}/stockfish_chess_engine/"
+        STOCKFISH_SOURCES_DIR="${SOURCES_FOLDER}/src/Stockfish/src"
 
         # download
         mkdir -p $STOCKFISH_SOURCES_DIR
@@ -51,6 +59,9 @@ Use Stockfish chess engine directly in your Flutter project.
   s.platform = :ios, '12.0'
 
   # Flutter.framework does not contain a i386 slice.
-  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
+  s.pod_target_xcconfig = { 
+    'DEFINES_MODULE' => 'YES', 
+    'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386',
+  }
   s.swift_version = '5.0'
 end
