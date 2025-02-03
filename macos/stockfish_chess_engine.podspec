@@ -38,11 +38,11 @@ Use Stockfish chess engine directly in your Flutter project.
         # setup variables
         NNUE_NAME="nn-5af11540bbfe.nnue"
         DOWNLOAD_BASE_URL="https://tests.stockfishchess.org/api/nn"
-        STOCKFISH_SOURCES_DIR="${PODS_ROOT}/stockfish_chess_engine/"
+        DEST_DIR="${PODS_ROOT}/stockfish_chess_engine/"
 
         # download
-        mkdir -p $STOCKFISH_SOURCES_DIR
-        curl -L -o "$STOCKFISH_SOURCES_DIR/$NNUE_NAME" "$DOWNLOAD_BASE_URL/$NNUE_NAME"
+        mkdir -p $DEST_DIR
+        curl -L -o "$DEST_DIR/$NNUE_NAME" "$DOWNLOAD_BASE_URL/$NNUE_NAME"
       SCRIPT
     }
   ]

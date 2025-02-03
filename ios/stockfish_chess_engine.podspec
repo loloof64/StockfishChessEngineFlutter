@@ -33,8 +33,8 @@ Use Stockfish chess engine directly in your Flutter project.
     'OTHER_LDFLAGS' => '-lstdc++'
   }
 
-  s.source_files = '../src/**/*.{h,c,cpp}', 'Classes/**/*.{h,c,cpp}'
-  s.public_header_files = '../src/**/*.h', 'Classes/**/*.h'
+  s.source_files = 'Classes/**/*.{h,c,cpp}'
+  s.public_header_files = 'Classes/**/*.h'
   
   #-- download nnue files
   s.script_phases = [
@@ -43,14 +43,13 @@ Use Stockfish chess engine directly in your Flutter project.
       :execution_position => :before_compile,
       :script => <<-SCRIPT
         # setup variables
-        SOURCES_FOLDER="${PODS_TARGET_SRCROOT}/.."
         NNUE_NAME="nn-5af11540bbfe.nnue"
         DOWNLOAD_BASE_URL="https://tests.stockfishchess.org/api/nn"
-        STOCKFISH_SOURCES_DIR="${SOURCES_FOLDER}/src/Stockfish/src"
+        DEST_DIR="${PODS_ROOT}/stockfish_chess_engine/"
 
         # download
-        mkdir -p $STOCKFISH_SOURCES_DIR
-        curl -L -o "$STOCKFISH_SOURCES_DIR/$NNUE_NAME" "$DOWNLOAD_BASE_URL/$NNUE_NAME"
+        mkdir -p $DEST_DIR
+        curl -L -o "$DEST_DIR/$NNUE_NAME" "$DOWNLOAD_BASE_URL/$NNUE_NAME"
       SCRIPT
     }
   ]

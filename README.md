@@ -38,6 +38,8 @@ You can see an example usage in example folder.
 
 - As the library creates two isolates, you must dispose Stockfish before perfoming an hot reload / hot restart, and then creating a new Stockfish instance.
 
+- If testing on IPhone simulator, consider disabling Impeller if the program fails to show UI : `flutter run --no-enable-impeller`
+
 ## For stockfish chess engine developpers
 
 1. Adjust the path of "llvm-path" in file **ffigen.yaml**
@@ -74,6 +76,24 @@ with
 ```
 
 and include **../../fixes/fixes.h** (if not already done)
+
+#### Adding main.h source file
+
+Add the file **src/Stockfish/src/main.h** with the following content :
+```cpp
+#ifndef __MAIN_H__
+#define __MAIN_H__
+
+int main(int argc, char* argv[]);
+
+#endif // __MAIN_H__
+```
+
+#### Copying code for ios and mac
+
+Then, copy **src/Stockfish** folder to
+- folder ios/Classes
+- folder macos/Classes
 
 ### Changing the downloaded NNUE file
 
