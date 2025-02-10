@@ -39,7 +39,7 @@ You can see an example usage in example folder.
 
 ## For stockfish chess engine developpers
 
-1. Adjust the path of "llvm-path" in file **ffigen.yaml**
+1. Adjust the path of "llvm-path" in file **ffigen.yaml** (linux users)
 2. Run `flutter pub get`.
 3. Uncomment line `#define _ffigen` on top of src/stockfish.h (for the ffi generation to pass).
 4. Run command `dart run ffigen --config ffigen.yaml`.
@@ -49,13 +49,13 @@ You can see an example usage in example folder.
 
 ### Changing Stockfish source files
 
-If you need to upgrade Stockfish source files, create a folder **Stockfish** inside **src** folder, copy the **src** folder from the stockfish sources into the new **Stockfish** folder.
+If you need to upgrade Stockfish source files, create a folder **Stockfish** inside **src** folder, copy the **src** folder from the stockfish sources into the new **Stockfish** folder (and also replace the readme file for Stockfish).
 
 Also you need to make some more adaptive works :
 
 #### Adapting streams
 
-- replace all calls to `cout << #SomeContent# << endl` by `fakeout << #SomeContent# << fakeendl` (And ajust also calls to `cout.rdbuf()` by `fakeout.rdbuf()`) **But do not replace calls to sync_cout** add include to **../../fixes/fixes.h** in all related files (and adjust the include path accordingly)
+- replace all calls to `cout << #SomeContent# << endl` by `fakeout << #SomeContent# << fakeendl` (without the std:: prefix if any) (And ajust also calls to `cout.rdbuf()` by `fakeout.rdbuf()`) **But do not replace calls to sync_cout** add include to **../../fixes/fixes.h** in all related files (and adjust the include path accordingly). Do the same for calls to `cout.#method#`. Don't forget to replace calls to `endl` (with or without std:: prefix) : once more just `endl`not `sync_endl`
 - proceed accordingly for `cin` : replace by `fakein`
 - and the same for `cerr`: replace by `fakeerr`
 - in **misc.h** replace
@@ -86,11 +86,19 @@ int main(int argc, char* argv[]);
 #endif // __MAIN_H__
 ```
 
+and replace **main.cpp** so that it includes this new file.
+
 #### Copying code for ios and mac
 
 Then, copy **src/Stockfish** folder to
 - folder ios/Classes
 - folder macos/Classes
+
+#### Adapting the NNUE names
+
+1. Copy the big and small nnue names from **src/Stockfish/src/evaluate.h**
+2. Replace their names in file **src/CMakeLists.txt**
+3. Also replace their names in file **ios/stockfish_chess_engine.podspec** and **macos/stockfish_chess_engine.podspec**
 
 ### Changing the downloaded NNUE file
 

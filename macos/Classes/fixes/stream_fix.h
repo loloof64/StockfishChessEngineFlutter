@@ -63,6 +63,7 @@ bool getline(FakeStream& is, std::string& str);
 
 extern FakeStream fakeout;
 extern FakeStream fakein;
+extern FakeStream fakeerr;
 extern std::string fakeendl;
 
 #endif

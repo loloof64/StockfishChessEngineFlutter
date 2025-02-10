@@ -7,7 +7,8 @@ project(stockfish_chess_engine VERSION 0.0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 
 file(GLOB_RECURSE cppPaths "Stockfish/src/*.cpp")
-set(NNUE_NAME nn-5af11540bbfe.nnue)
+set(NNUE_NAME_BIG nn-1111cefa1111.nnue)
+set(NNUE_NAME_SMALL nn-37f18f62d772.nnue)
 
 add_library(stockfish_chess_engine SHARED
   "stockfish_chess_engine.cpp"
@@ -42,8 +43,11 @@ target_include_directories(stockfish_chess_engine
 )
 
 if (MSVC)
-    file(DOWNLOAD https://tests.stockfishchess.org/api/nn/${NNUE_NAME} ${CMAKE_BINARY_DIR}/runner/Debug/${NNUE_NAME})
-    file(COPY ${CMAKE_BINARY_DIR}/runner/Debug/${NNUE_NAME} DESTINATION ${CMAKE_BINARY_DIR}/runner/Release)
+    file(DOWNLOAD https://tests.stockfishchess.org/api/nn/${NNUE_NAME_BIG} ${CMAKE_BINARY_DIR}/runner/Debug/${NNUE_NAME_BIG})
+    file(COPY ${CMAKE_BINARY_DIR}/runner/Debug/${NNUE_NAME_BIG} DESTINATION ${CMAKE_BINARY_DIR}/runner/Release)
+    file(DOWNLOAD https://tests.stockfishchess.org/api/nn/${NNUE_NAME_SMALL} ${CMAKE_BINARY_DIR}/runner/Debug/${NNUE_NAME_SMALL})
+    file(COPY ${CMAKE_BINARY_DIR}/runner/Debug/${NNUE_NAME_SMALL} DESTINATION ${CMAKE_BINARY_DIR}/runner/Release)
 else ()
-    file(DOWNLOAD https://tests.stockfishchess.org/api/nn/${NNUE_NAME} ${CMAKE_BINARY_DIR}/${NNUE_NAME})
+    file(DOWNLOAD https://tests.stockfishchess.org/api/nn/${NNUE_NAME_BIG} ${CMAKE_BINARY_DIR}/${NNUE_NAME_BIG})
+    file(DOWNLOAD https://tests.stockfishchess.org/api/nn/${NNUE_NAME_SMALL} ${CMAKE_BINARY_DIR}/${NNUE_NAME_SMALL})
 endif ()

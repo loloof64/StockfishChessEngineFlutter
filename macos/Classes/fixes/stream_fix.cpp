@@ -30,4 +30,5 @@ bool std::getline(FakeStream& is, std::string& str) {
 
 FakeStream fakeout;
 FakeStream fakein;
+FakeStream fakeerr;
 std::string fakeendl("\n");

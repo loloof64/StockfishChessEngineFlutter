@@ -43,13 +43,15 @@ Use Stockfish chess engine directly in your Flutter project.
       :execution_position => :before_compile,
       :script => <<-SCRIPT
         # setup variables
-        NNUE_NAME="nn-5af11540bbfe.nnue"
+        NNUE_NAME_BIG="nn-1111cefa1111.nnue"
+        NNUE_NAME_SMALL="nn-37f18f62d772.nnue"
         DOWNLOAD_BASE_URL="https://tests.stockfishchess.org/api/nn"
         DEST_DIR="${PODS_ROOT}/stockfish_chess_engine/"
 
         # download
         mkdir -p $DEST_DIR
-        curl -L -o "$DEST_DIR/$NNUE_NAME" "$DOWNLOAD_BASE_URL/$NNUE_NAME"
+        curl -L -o "$DEST_DIR/$NNUE_NAME_BIG" "$DOWNLOAD_BASE_URL/$NNUE_NAME_BIG"
+        curl -L -o "$DEST_DIR/$NNUE_NAME_SMALL" "$DOWNLOAD_BASE_URL/$NNUE_NAME_SMALL"
       SCRIPT
     }
   ]
