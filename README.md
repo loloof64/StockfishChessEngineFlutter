@@ -4,8 +4,6 @@ Use Stockfish chess engine in your Flutter project.
 
 This project is based on sources for Stockfish 16.
 
-Note : this project has successfully been tested for IPhone, but not yet for MacOS.
-
 ## Usage
 
 ```dart

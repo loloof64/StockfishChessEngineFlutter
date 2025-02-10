@@ -3,7 +3,7 @@
 #include "fixes/fixes.h"
 #include <string>
 
-#include "Stockfish/src/main.cpp"
+#include "Stockfish/src/main.h"
 
 #define BUFFER_SIZE 1024
 

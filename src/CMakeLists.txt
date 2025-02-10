@@ -3,7 +3,7 @@
 # the plugin to fail to compile for some customers of the plugin.
 cmake_minimum_required(VERSION 3.10)
 
-project(stockfish_chess_engine_library VERSION 0.0.1 LANGUAGES CXX)
+project(stockfish_chess_engine VERSION 0.0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 
 file(GLOB_RECURSE cppPaths "Stockfish/src/*.cpp")

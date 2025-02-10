@@ -18,6 +18,6 @@ add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../src" "${CMAKE_CURRENT_BINARY_DI
 set(stockfish_chess_engine_bundled_libraries
   # Defined in ../src/CMakeLists.txt.
   # This can be changed to accommodate different builds.
-  $<TARGET_FILE:loloof64_stockfish>
+  $<TARGET_FILE:stockfish_chess_engine>
   PARENT_SCOPE
 )
