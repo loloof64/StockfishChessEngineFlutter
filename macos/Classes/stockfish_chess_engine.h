@@ -19,20 +19,23 @@ typedef ptrdiff_t ssize_t;
 extern "C" {
 #endif
 
+#if defined(_WIN32)
+    #define API_EXPORT
+#else
+    #define API_EXPORT __attribute__((visibility("default"))) __attribute__((used))
+#endif
+
 // Stockfish main loop.
-__attribute__((visibility("default")))
-__attribute__((used))
-FFI_PLUGIN_EXPORT int stockfish_main();
+API_EXPORT FFI_PLUGIN_EXPORT int stockfish_main();
 
 // Writing to Stockfish STDIN.
-__attribute__((visibility("default")))
-__attribute__((used))
-FFI_PLUGIN_EXPORT ssize_t stockfish_stdin_write(char *data);
+API_EXPORT FFI_PLUGIN_EXPORT ssize_t stockfish_stdin_write(char *data);
 
 // Reading Stockfish STDOUT.
-__attribute__((visibility("default")))
-__attribute__((used))
-FFI_PLUGIN_EXPORT char * stockfish_stdout_read();
+API_EXPORT FFI_PLUGIN_EXPORT char * stockfish_stdout_read();
+
+// Reading Stockfish STDERR.
+API_EXPORT FFI_PLUGIN_EXPORT char * stockfish_stderr_read();
 
 #ifndef _ffigen
 }

@@ -28,6 +28,7 @@ class MyAppState extends State<MyApp> with WindowListener {
   late Stockfish _stockfish;
   String _fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
   late StreamSubscription _stockfishOutputSubsciption;
+  late StreamSubscription _stockfishErrorSubsciption;
   var _timeMs = 1000.0;
   var _nextMove = '';
   var _stockfishOutputText = '';
@@ -69,6 +70,13 @@ class MyAppState extends State<MyApp> with WindowListener {
         _nextMove = parts[1];
       });
     }
+  }
+
+  void _readStockfishError(String error) {
+    // At least now, stockfish is ready : update UI.
+    setState(() {
+      debugPrint("@@@$error@@@");
+    });
   }
 
   void _editPosition(BuildContext context) async {
@@ -125,6 +133,7 @@ class MyAppState extends State<MyApp> with WindowListener {
         _stockfish.state.value == StockfishState.error) {
       return;
     }
+    _stockfishErrorSubsciption.cancel();
     _stockfishOutputSubsciption.cancel();
     _stockfish.dispose();
     await Future.delayed(const Duration(milliseconds: 200));
@@ -138,6 +147,7 @@ class MyAppState extends State<MyApp> with WindowListener {
     setState(() {
       _stockfishOutputText = '';
     });
+    _stockfishErrorSubsciption = _stockfish.stderr.listen(_readStockfishError);
     await Future.delayed(const Duration(milliseconds: 1500));
     _stockfish.stdin = 'uci';
     await Future.delayed(const Duration(milliseconds: 3000));

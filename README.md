@@ -14,6 +14,11 @@ final stockfishSubscription = stockfish.stdout.listen((message) {
     print(message);
 });
 
+// Create a subscribtion on stderr : subscription that you'll have to cancel before disposing Stockfish.
+final stockfishErrorsSubscription = stockfish.stderr.listen((message) {
+    print(message);
+});
+
 // Get Stockfish ready
 stockfish.stdin = 'isready'
 
@@ -23,6 +28,7 @@ stockfish.stdin = 'position fen rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1
 stockfish.stdin = 'go movetime 1500' // search move for at most 1500ms
 
 // Don't remember to dispose Stockfish when you're done.
+stockfishErrorsSubscription.cancel();
 stockfishSubscription.cancel();
 stockfish.dispose();
 ```
@@ -45,7 +51,6 @@ You can see an example usage in example folder.
 4. Run command `dart run ffigen --config ffigen.yaml`.
    More on https://pub.dev/packages/ffigen for the prerequesites per OS.
 5. Comment line `#define _ffigen` in src/stockfish.h (otherwise Stockfish engine compilation will pass but be incorrect).
-6. In the file lib/stockfish_bindings_generated.dart, add the following import line : `import 'package:ffi/ffi.dart';`
 
 ### Changing Stockfish source files
 

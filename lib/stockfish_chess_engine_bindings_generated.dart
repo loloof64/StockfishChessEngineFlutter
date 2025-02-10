@@ -27,6 +27,7 @@ class StockfishChessEngineBindings {
           lookup)
       : _lookup = lookup;
 
+  /// Stockfish main loop.
   int stockfish_main() {
     return _stockfish_main();
   }
@@ -35,6 +36,7 @@ class StockfishChessEngineBindings {
       _lookup<ffi.NativeFunction<ffi.Int Function()>>('stockfish_main');
   late final _stockfish_main = _stockfish_mainPtr.asFunction<int Function()>();
 
+  /// Writing to Stockfish STDIN.
   int stockfish_stdin_write(
     ffi.Pointer<ffi.Char> data,
   ) {
@@ -49,6 +51,7 @@ class StockfishChessEngineBindings {
   late final _stockfish_stdin_write = _stockfish_stdin_writePtr
       .asFunction<int Function(ffi.Pointer<ffi.Char>)>();
 
+  /// Reading Stockfish STDOUT.
   ffi.Pointer<ffi.Char> stockfish_stdout_read() {
     return _stockfish_stdout_read();
   }
@@ -58,6 +61,17 @@ class StockfishChessEngineBindings {
           'stockfish_stdout_read');
   late final _stockfish_stdout_read =
       _stockfish_stdout_readPtr.asFunction<ffi.Pointer<ffi.Char> Function()>();
+
+  /// Reading Stockfish STDERR.
+  ffi.Pointer<ffi.Char> stockfish_stderr_read() {
+    return _stockfish_stderr_read();
+  }
+
+  late final _stockfish_stderr_readPtr =
+      _lookup<ffi.NativeFunction<ffi.Pointer<ffi.Char> Function()>>(
+          'stockfish_stderr_read');
+  late final _stockfish_stderr_read =
+      _stockfish_stderr_readPtr.asFunction<ffi.Pointer<ffi.Char> Function()>();
 }
 
 typedef ssize_t = __ssize_t;

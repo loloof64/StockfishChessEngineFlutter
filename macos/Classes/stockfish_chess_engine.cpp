@@ -12,7 +12,9 @@ const char *QUITOK = "quit\n";
 int main(int, char **);
 
 std::string data;
+std::string errData;
 char buffer[BUFFER_SIZE + 1];
+char errBuffer[BUFFER_SIZE + 1];
 
 FFI_PLUGIN_EXPORT int stockfish_main() {
   int argc = 1;
@@ -48,6 +50,19 @@ FFI_PLUGIN_EXPORT char* stockfish_stdout_read() {
     }
     buffer[i] = 0;
     return buffer;
+  }
+  return nullptr;
+}
+
+FFI_PLUGIN_EXPORT char* stockfish_stderr_read() {
+  if (getline(fakeerr, errData)) {
+    size_t len = errData.length();
+    size_t i;
+    for (i = 0; i < len && i < BUFFER_SIZE; i++) {
+      errBuffer[i] = errData[i];
+    }
+    errBuffer[i] = 0;
+    return errBuffer;
   }
   return nullptr;
 }

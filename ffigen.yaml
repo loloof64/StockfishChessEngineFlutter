@@ -18,4 +18,4 @@ comments:
   style: any
   length: full
 llvm-path:
-  - "/usr/lib/llvm-18"
+  - "/usr/lib/llvm-19"

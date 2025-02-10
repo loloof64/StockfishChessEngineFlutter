@@ -44,11 +44,14 @@ class Stockfish {
 
   final _state = _StockfishState();
   final _stdoutController = StreamController<String>.broadcast();
+  final _stderrController = StreamController<String>.broadcast();
   final _mainPort = ReceivePort();
   final _stdoutPort = ReceivePort();
+  final _stderrPort = ReceivePort();
 
   late StreamSubscription _mainSubscription;
   late StreamSubscription _stdoutSubscription;
+  late StreamSubscription _stderrSubscription;
 
   Stockfish._({this.completer}) {
     _mainSubscription =
@@ -60,7 +63,14 @@ class Stockfish {
         developer.log('The stdout isolate sent $message', name: 'Stockfish');
       }
     });
-    compute(_spawnIsolates, [_mainPort.sendPort, _stdoutPort.sendPort]).then(
+    _stderrSubscription = _stderrPort.listen((message) {
+      if (message is String) {
+        _stderrController.sink.add(message);
+      } else {
+        developer.log('The stderr isolate sent $message', name: 'Stockfish');
+      }
+    });
+    compute(_spawnIsolates, [_mainPort.sendPort, _stdoutPort.sendPort, _stderrPort.sendPort]).then(
       (success) {
         final state = success ? StockfishState.ready : StockfishState.error;
         _state._setValue(state);
@@ -97,6 +107,9 @@ class Stockfish {
   /// The standard output stream.
   Stream<String> get stdout => _stdoutController.stream;
 
+  /// The standard error stream.
+  Stream<String> get stderr => _stderrController.stream;
+
   /// The standard input sink.
   set stdin(String line) {
     final stateValue = _state.value;
@@ -124,6 +137,7 @@ class Stockfish {
 
     _mainSubscription.cancel();
     _stdoutSubscription.cancel();
+    _stderrSubscription.cancel();
 
     _state._setValue(
         exitCode == 0 ? StockfishState.disposed : StockfishState.error);
@@ -197,16 +211,53 @@ void _isolateStdout(SendPort stdoutPort) async {
   }
 }
 
-Future<bool> _spawnIsolates(List<SendPort> mainAndStdout) async {
+void _isolateStderr(SendPort stderrPort) async {
+  String previous = '';
+
+  while (true) {
+    final pointer = _bindings.stockfish_stderr_read();
+
+    if (pointer.address == 0) {
+      developer.log('nativeStderrRead returns NULL', name: 'Stockfish');
+      return;
+    }
+
+    Uint8List newContentCharList;
+
+    final newContentLength = pointer.cast<Utf8>().length;
+    newContentCharList = Uint8List.view(
+        pointer.cast<Uint8>().asTypedList(newContentLength).buffer,
+        0,
+        newContentLength);
+
+    final newContent = utf8.decode(newContentCharList);
+
+    final data = previous + newContent;
+    final lines = data.split('\n');
+    previous = lines.removeLast();
+    for (final line in lines) {
+      stderrPort.send(line);
+    }
+  }
+}
+
+Future<bool> _spawnIsolates(List<SendPort> mainAndStdoutAndStdErr) async {
   try {
-    await Isolate.spawn(_isolateStdout, mainAndStdout[1]);
+    await Isolate.spawn(_isolateStderr, mainAndStdoutAndStdErr[2]);
+  } catch (error) {
+    developer.log('Failed to spawn stderr isolate: $error', name: 'Stockfish');
+    return false;
+  }
+
+  try {
+    await Isolate.spawn(_isolateStdout, mainAndStdoutAndStdErr[1]);
   } catch (error) {
     developer.log('Failed to spawn stdout isolate: $error', name: 'Stockfish');
     return false;
   }
 
   try {
-    await Isolate.spawn(_isolateMain, mainAndStdout[0]);
+    await Isolate.spawn(_isolateMain, mainAndStdoutAndStdErr[0]);
   } catch (error) {
     developer.log('Failed to spawn main isolate: $error', name: 'Stockfish');
     return false;
