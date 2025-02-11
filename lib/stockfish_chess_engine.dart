@@ -70,7 +70,8 @@ class Stockfish {
         developer.log('The stderr isolate sent $message', name: 'Stockfish');
       }
     });
-    compute(_spawnIsolates, [_mainPort.sendPort, _stdoutPort.sendPort, _stderrPort.sendPort]).then(
+    compute(_spawnIsolates,
+        [_mainPort.sendPort, _stdoutPort.sendPort, _stderrPort.sendPort]).then(
       (success) {
         final state = success ? StockfishState.ready : StockfishState.error;
         _state._setValue(state);
@@ -186,14 +187,11 @@ void _isolateStdout(SendPort stdoutPort) async {
   String previous = '';
 
   while (true) {
-    ///////////////////////////////
-    developer.log('Previous in stdout [$previous]', name: 'Stockfish');
-    ///////////////////////////////
     final pointer = _bindings.stockfish_stdout_read();
 
     if (pointer.address == 0) {
-      developer.log('nativeStdoutRead returns NULL', name: 'Stockfish');
-      return;
+      await Future.delayed(const Duration(milliseconds: 10));
+      continue;
     }
 
     Uint8List newContentCharList;
@@ -206,17 +204,12 @@ void _isolateStdout(SendPort stdoutPort) async {
 
     final newContent = utf8.decode(newContentCharList);
 
-    ///////////////////////////////
-    developer.log('NewContent in stdout [$newContent]', name: 'Stockfish');
-    ///////////////////////////////
-
     final data = previous + newContent;
     final lines = data.split('\n');
     previous = lines.removeLast();
     for (final line in lines) {
       stdoutPort.send(line);
     }
-
   }
 }
 
@@ -227,8 +220,8 @@ void _isolateStderr(SendPort stderrPort) async {
     final pointer = _bindings.stockfish_stderr_read();
 
     if (pointer.address == 0) {
-      developer.log('nativeStderrRead returns NULL', name: 'Stockfish');
-      return;
+      await Future.delayed(const Duration(milliseconds: 10));
+      continue;
     }
 
     Uint8List newContentCharList;

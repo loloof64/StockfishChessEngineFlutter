@@ -11,8 +11,6 @@ const char *QUITOK = "quit\n";
 
 int main(int, char **);
 
-std::string data;
-std::string errData;
 char buffer[BUFFER_SIZE + 1];
 char errBuffer[BUFFER_SIZE + 1];
 
@@ -42,27 +40,29 @@ FFI_PLUGIN_EXPORT ssize_t stockfish_stdin_write(char *data) {
 }
 
 FFI_PLUGIN_EXPORT char* stockfish_stdout_read() {
-  if (getline(fakeout, data)) {
-    size_t len = data.length();
+  std::string outputLine;
+  if (fakeout.try_get_line(outputLine)) {
+    size_t len = outputLine.length();
     size_t i;
     for (i = 0; i < len && i < BUFFER_SIZE; i++) {
-      buffer[i] = data[i];
+      buffer[i] = outputLine[i];
     }
     buffer[i] = 0;
     return buffer;
   }
-  return nullptr;
+  return nullptr; // No data available
 }
 
 FFI_PLUGIN_EXPORT char* stockfish_stderr_read() {
-  if (getline(fakeerr, errData)) {
-    size_t len = errData.length();
+  std::string errorLine;
+  if (fakeerr.try_get_line(errorLine)) {
+    size_t len = errorLine.length();
     size_t i;
     for (i = 0; i < len && i < BUFFER_SIZE; i++) {
-      errBuffer[i] = errData[i];
+      errBuffer[i] = errorLine[i];
     }
     errBuffer[i] = 0;
     return errBuffer;
   }
-  return nullptr;
+  return nullptr; // No data available
 }
