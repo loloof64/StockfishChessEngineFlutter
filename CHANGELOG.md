@@ -1,3 +1,15 @@
+## 0.7.0
+
+- Adding code for MacOs and IOS (have not been tested)
+- Using Stockfish 17 source code
+- Adding Stockfish error stream
+- Proper handling of Stockfish I/O in native code
+- Proper disposal of Stockfish isolates
+
+## 0.6.0
+
+- Bug fix for windows (only tested on Windows 11) : the library had the wrong path for the built dll.
+
 ## 0.5.0
 
 - get build updated so that the code compiles fine
