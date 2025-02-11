@@ -52,7 +52,7 @@ class MyAppState extends State<MyApp> with WindowListener {
   @override
   void onWindowClose() async {
     await _stopStockfish();
-    await windowManager.close();
+    await windowManager.destroy();
   }
 
   void _readStockfishOutput(String output) {
