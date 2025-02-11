@@ -133,6 +133,7 @@ class Stockfish {
   }
 
   void _cleanUp(int exitCode) {
+    _stderrController.close();
     _stdoutController.close();
 
     _mainSubscription.cancel();
