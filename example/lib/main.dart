@@ -36,14 +36,11 @@ class MyAppState extends State<MyApp> with WindowListener {
   @override
   void initState() {
     windowManager.addListener(this);
-    _overrideDefaultCloseHandler();
     _doStartStockfish();
     super.initState();
-  }
-
-  Future<void> _overrideDefaultCloseHandler() async {
-    await windowManager.setPreventClose(true);
-    setState(() {});
+    windowManager.setPreventClose(true).then((_) {
+      setState(() {});
+    });
   }
 
   @override
@@ -54,9 +51,8 @@ class MyAppState extends State<MyApp> with WindowListener {
 
   @override
   void onWindowClose() async {
-    _stopStockfish();
-    await Future.delayed(const Duration(milliseconds: 200));
-    await windowManager.destroy();
+    await _stopStockfish();
+    await windowManager.close();
   }
 
   void _readStockfishOutput(String output) {
@@ -128,7 +124,7 @@ class MyAppState extends State<MyApp> with WindowListener {
     _stockfish.stdin = 'go movetime ${_timeMs.toInt()}';
   }
 
-  void _stopStockfish() async {
+  Future<void> _stopStockfish() async {
     if (_stockfish.state.value == StockfishState.disposed ||
         _stockfish.state.value == StockfishState.error) {
       return;
@@ -136,7 +132,7 @@ class MyAppState extends State<MyApp> with WindowListener {
     _stockfishErrorSubsciption.cancel();
     _stockfishOutputSubsciption.cancel();
     _stockfish.dispose();
-    await Future.delayed(const Duration(milliseconds: 200));
+    await Future.delayed(const Duration(seconds: 2));
     setState(() {});
   }
 

@@ -48,6 +48,8 @@ class Stockfish {
   final _mainPort = ReceivePort();
   final _stdoutPort = ReceivePort();
   final _stderrPort = ReceivePort();
+  SendPort? _stdoutSendPort;
+  SendPort? _stderrSendPort;
 
   late StreamSubscription _mainSubscription;
   late StreamSubscription _stdoutSubscription;
@@ -59,15 +61,15 @@ class Stockfish {
     _stdoutSubscription = _stdoutPort.listen((message) {
       if (message is String) {
         _stdoutController.sink.add(message);
-      } else {
-        developer.log('The stdout isolate sent $message', name: 'Stockfish');
+      } else if (message is SendPort) {
+        _stdoutSendPort = message;
       }
     });
     _stderrSubscription = _stderrPort.listen((message) {
       if (message is String) {
         _stderrController.sink.add(message);
-      } else {
-        developer.log('The stderr isolate sent $message', name: 'Stockfish');
+      } else if (message is SendPort) {
+        _stderrSendPort = message;
       }
     });
     compute(_spawnIsolates,
@@ -141,6 +143,9 @@ class Stockfish {
     _stdoutSubscription.cancel();
     _stderrSubscription.cancel();
 
+    _stdoutSendPort?.send("stop");
+    _stderrSendPort?.send("stop");
+
     _state._setValue(
         exitCode == 0 ? StockfishState.disposed : StockfishState.error);
 
@@ -184,6 +189,17 @@ void _isolateMain(SendPort mainPort) {
 }
 
 void _isolateStdout(SendPort stdoutPort) async {
+  ReceivePort receivePort = ReceivePort();
+  stdoutPort.send(receivePort.sendPort);
+
+  receivePort.listen((message) {
+    if (message == 'stop') {
+      receivePort.close();
+      developer.log('stdout isolate stopped', name: 'Stockfish');
+      Isolate.exit();
+    }
+  });
+
   String previous = '';
 
   while (true) {
@@ -214,6 +230,17 @@ void _isolateStdout(SendPort stdoutPort) async {
 }
 
 void _isolateStderr(SendPort stderrPort) async {
+  ReceivePort receivePort = ReceivePort();
+  stderrPort.send(receivePort.sendPort);
+
+  receivePort.listen((message) {
+    if (message == 'stop') {
+      receivePort.close();
+      developer.log('stderr isolate stopped', name: 'Stockfish');
+      Isolate.exit();
+    }
+  });
+
   String previous = '';
 
   while (true) {
