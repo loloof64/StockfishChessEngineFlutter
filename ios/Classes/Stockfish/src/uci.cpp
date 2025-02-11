@@ -488,8 +488,8 @@ void UCIEngine::on_iter(const Engine::InfoIter& info) {
 void UCIEngine::on_bestmove(std::string_view bestmove, std::string_view ponder) {
     sync_cout << "bestmove " << bestmove;
     if (!ponder.empty())
-        std::cout << " ponder " << ponder;
-    std::cout << sync_endl;
+        fakeout << " ponder " << ponder;
+    fakeout << sync_endl;
 }
 
 }  // namespace Stockfish

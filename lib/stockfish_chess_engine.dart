@@ -186,6 +186,9 @@ void _isolateStdout(SendPort stdoutPort) async {
   String previous = '';
 
   while (true) {
+    ///////////////////////////////
+    developer.log('Previous in stdout [$previous]', name: 'Stockfish');
+    ///////////////////////////////
     final pointer = _bindings.stockfish_stdout_read();
 
     if (pointer.address == 0) {
@@ -203,12 +206,17 @@ void _isolateStdout(SendPort stdoutPort) async {
 
     final newContent = utf8.decode(newContentCharList);
 
+    ///////////////////////////////
+    developer.log('NewContent in stdout [$newContent]', name: 'Stockfish');
+    ///////////////////////////////
+
     final data = previous + newContent;
     final lines = data.split('\n');
     previous = lines.removeLast();
     for (final line in lines) {
       stdoutPort.send(line);
     }
+
   }
 }
 
