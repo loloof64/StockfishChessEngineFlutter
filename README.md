@@ -2,7 +2,7 @@
 
 Use Stockfish chess engine in your Flutter project.
 
-This project is based on sources for Stockfish 16.
+This project is based on sources for Stockfish 17.
 
 ## Usage
 
@@ -102,10 +102,9 @@ Then, copy **src/Stockfish** folder to
 #### Adapting code for Windows
 
 * In file **src/Stockfish/misc.cpp** we have to remove call to `_get_pgmptr` as this time Stockfish is not a standalone program.
-So, in function `std::string CommandLine::get_binary_directory` comment the matching section with an `#if 0 ... #endif` bloc :
+So, in function `std::string CommandLine::get_binary_directory` remove the matching section :
 
 ```cpp
-#if 0
 #ifdef _WIN32
     pathSeparator = "\\";
     #ifdef _MSC_VER
@@ -118,6 +117,21 @@ So, in function `std::string CommandLine::get_binary_directory` comment the matc
 #else
     pathSeparator = "/";
 #endif
+```
+
+and replace with the following :
+
+```cpp
+#ifdef _WIN32
+    pathSeparator = "\\";
+    std::string basePath = "build\\windows\\x64\\runner\\";
+    #ifdef NDEBUG
+        argv0 = basePath + "Release";
+    #else
+        argv0 = basePath + "Debug";
+    #endif
+#else
+    pathSeparator = "/";
 #endif
 ```
 
