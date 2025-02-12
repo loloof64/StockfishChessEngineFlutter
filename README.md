@@ -135,7 +135,7 @@ and replace with the following :
 #endif
 ```
 
-* In file ***src/Stockfish/uci.cpp***, a lambda function can make the compilation failing, as the MSVC compiler is strictier than GCC. So in function `std::string UCIEngine::format_score`, in the lambda using `TB_CP`, we just need to declare it as a parameter of the lambda :
+* In file ***src/Stockfish/uci.cpp***, a lambda function can make the compilation failing, as the MSVC compiler is strictier than GCC. So in function `std::string UCIEngine::format_score`, in the lambda using `TB_CP`, we just need to declare it inside the lambda :
 
 ```cpp
 const auto    format =
@@ -143,7 +143,8 @@ const auto    format =
                    auto m = (mate.plies > 0 ? (mate.plies + 1) : mate.plies) / 2;
                    return std::string("mate ") + std::to_string(m);
                },
-               [TB_CP](Score::Tablebase tb) -> std::string {
+               [](Score::Tablebase tb) -> std::string {
+                    constexpr int TB_CP = 20000;
                    return std::string("cp ")
                         + std::to_string((tb.win ? TB_CP - tb.plies : -TB_CP - tb.plies));
                },
