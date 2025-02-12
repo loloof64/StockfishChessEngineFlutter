@@ -99,6 +99,45 @@ Then, copy **src/Stockfish** folder to
 - folder ios/Classes
 - folder macos/Classes
 
+#### Adapting code for Windows
+
+* In file **src/Stockfish/misc.cpp** we have to remove call to `_get_pgmptr` as this time Stockfish is not a standalone program.
+So, in function `std::string CommandLine::get_binary_directory` comment the matching section with an `#if 0 ... #endif` bloc :
+
+```cpp
+#if 0
+#ifdef _WIN32
+    pathSeparator = "\\";
+    #ifdef _MSC_VER
+    // Under windows argv[0] may not have the extension. Also _get_pgmptr() had
+    // issues in some Windows 10 versions, so check returned values carefully.
+    char* pgmptr = nullptr;
+    if (!_get_pgmptr(&pgmptr) && pgmptr != nullptr && *pgmptr)
+        argv0 = pgmptr;
+    #endif
+#else
+    pathSeparator = "/";
+#endif
+#endif
+```
+
+* In file ***src/Stockfish/uci.cpp***, a lambda function can make the compilation failing, as the MSVC compiler is strictier than GCC. So in function `std::string UCIEngine::format_score`, in the lambda using `TB_CP`, we just need to declare it as a parameter of the lambda :
+
+```cpp
+const auto    format =
+      overload{[](Score::Mate mate) -> std::string {
+                   auto m = (mate.plies > 0 ? (mate.plies + 1) : mate.plies) / 2;
+                   return std::string("mate ") + std::to_string(m);
+               },
+               [TB_CP](Score::Tablebase tb) -> std::string {
+                   return std::string("cp ")
+                        + std::to_string((tb.win ? TB_CP - tb.plies : -TB_CP - tb.plies));
+               },
+               [](Score::InternalUnits units) -> std::string {
+                   return std::string("cp ") + std::to_string(units.value);
+               }};
+```
+
 #### Adapting the NNUE names
 
 1. Copy the big and small nnue names from **src/Stockfish/src/evaluate.h**

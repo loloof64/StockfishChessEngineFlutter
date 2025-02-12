@@ -460,6 +460,7 @@ bool is_whitespace(const std::string& s) {
 std::string CommandLine::get_binary_directory(std::string argv0) {
     std::string pathSeparator;
 
+#if 0
 #ifdef _WIN32
     pathSeparator = "\\";
     #ifdef _MSC_VER
@@ -471,6 +472,7 @@ std::string CommandLine::get_binary_directory(std::string argv0) {
     #endif
 #else
     pathSeparator = "/";
+#endif
 #endif
 
     // Extract the working directory

@@ -368,7 +368,7 @@ std::string UCIEngine::format_score(const Score& s) {
                    auto m = (mate.plies > 0 ? (mate.plies + 1) : mate.plies) / 2;
                    return std::string("mate ") + std::to_string(m);
                },
-               [](Score::Tablebase tb) -> std::string {
+               [TB_CP](Score::Tablebase tb) -> std::string {
                    return std::string("cp ")
                         + std::to_string((tb.win ? TB_CP - tb.plies : -TB_CP - tb.plies));
                },
