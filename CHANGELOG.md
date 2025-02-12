@@ -1,3 +1,7 @@
+## 0.7.1
+
+- Fix for Windows : the plugin did not compile
+
 ## 0.7.0
 
 - Adding code for MacOs and IOS (have not been tested)
