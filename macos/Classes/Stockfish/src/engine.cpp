@@ -55,7 +55,9 @@ Engine::Engine(std::string path) :
     networks(
       numaContext,
       NN::Networks(
+        #ifndef IS_MOBILE_TARGET
         NN::NetworkBig({EvalFileDefaultNameBig, "None", ""}, NN::EmbeddedNNUEType::BIG),
+        #endif
         NN::NetworkSmall({EvalFileDefaultNameSmall, "None", ""}, NN::EmbeddedNNUEType::SMALL))) {
     pos.set(StartFEN, false, &states->back());
     capSq = SQ_NONE;
@@ -102,14 +104,21 @@ Engine::Engine(std::string path) :
     options["SyzygyProbeDepth"] << Option(1, 1, 100);
     options["Syzygy50MoveRule"] << Option(true);
     options["SyzygyProbeLimit"] << Option(7, 0, 7);
+    #ifdef IS_MOBILE_TARGET
+    options["EvalFile"] << Option(EvalFileDefaultNameSmall, [this](const Option& o) {
+        load_small_network(o);
+        return std::nullopt;
+    });
+    #else
     options["EvalFile"] << Option(EvalFileDefaultNameBig, [this](const Option& o) {
-        load_big_network(o);
+        load_small_network(o);
         return std::nullopt;
     });
     options["EvalFileSmall"] << Option(EvalFileDefaultNameSmall, [this](const Option& o) {
         load_small_network(o);
         return std::nullopt;
     });
+    #endif
 
     load_networks();
     resize_threads();
@@ -226,25 +235,35 @@ void Engine::set_ponderhit(bool b) { threads.main_manager()->ponder = b; }
 // network related
 
 void Engine::verify_networks() const {
+    #ifndef IS_MOBILE_TARGET
     networks->big.verify(options["EvalFile"]);
     networks->small.verify(options["EvalFileSmall"]);
+    #else
+    networks->small.verify(options["EvalFile"]);
+    #endif
 }
 
 void Engine::load_networks() {
     networks.modify_and_replicate([this](NN::Networks& networks_) {
+        #ifndef IS_MOBILE_TARGET
         networks_.big.load(binaryDirectory, options["EvalFile"]);
         networks_.small.load(binaryDirectory, options["EvalFileSmall"]);
+        #else
+        networks_.small.load(binaryDirectory, options["EvalFile"]);
+        #endif
     });
     threads.clear();
     threads.ensure_network_replicated();
 }
 
+#ifndef IS_MOBILE_TARGET
 void Engine::load_big_network(const std::string& file) {
     networks.modify_and_replicate(
       [this, &file](NN::Networks& networks_) { networks_.big.load(binaryDirectory, file); });
     threads.clear();
     threads.ensure_network_replicated();
 }
+#endif
 
 void Engine::load_small_network(const std::string& file) {
     networks.modify_and_replicate(
@@ -255,7 +274,9 @@ void Engine::load_small_network(const std::string& file) {
 
 void Engine::save_network(const std::pair<std::optional<std::string>, std::string> files[2]) {
     networks.modify_and_replicate([&files](NN::Networks& networks_) {
+        #ifndef IS_MOBILE_TARGET
         networks_.big.save(files[0].first);
+        #endif
         networks_.small.save(files[1].first);
     });
 }

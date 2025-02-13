@@ -54,116 +54,13 @@ You can see an example usage in example folder.
 
 ### Changing Stockfish source files
 
-If you need to upgrade Stockfish source files, create a folder **Stockfish** inside **src** folder, copy the **src** folder from the stockfish sources into the new **Stockfish** folder (and also replace the readme file for Stockfish).
+Please, see instructions in file UPGRADING_STOCKFISH.md
 
-Also you need to make some more adaptive works :
-
-#### Adapting streams
-
-- replace all calls to `cout << #SomeContent# << endl` by `fakeout << #SomeContent# << fakeendl` (without the std:: prefix if any) (And ajust also calls to `cout.rdbuf()` by `fakeout.rdbuf()`) **But do not replace calls to sync_cout** add include to **../../fixes/fixes.h** in all related files (and adjust the include path accordingly). Do the same for calls to `cout.#method#`. Don't forget to replace calls to `endl` (with or without std:: prefix) : once more just `endl`not `sync_endl`
-- proceed accordingly for `cin` : replace by `fakein`
-- and the same for `cerr`: replace by `fakeerr`
-- in **misc.h** replace
-
-```cpp
-#define sync_cout std::cout << IO_LOCK
-#define sync_endl std::endl << IO_UNLOCK
-```
-
-with
-
-```cpp
-#define sync_cout fakeout << IO_LOCK
-#define sync_endl fakeendl << IO_UNLOCK
-```
-
-and include **../../fixes/fixes.h** (if not already done)
-
-#### Adding main.h source file
-
-Add the file **src/Stockfish/src/main.h** with the following content :
-```cpp
-#ifndef __MAIN_H__
-#define __MAIN_H__
-
-int main(int argc, char* argv[]);
-
-#endif // __MAIN_H__
-```
-
-and replace **main.cpp** so that it includes this new file.
-
-#### Copying code for ios and mac
-
-Then, copy **src/Stockfish** folder to
-- folder ios/Classes
-- folder macos/Classes
-
-#### Adapting code for Windows
-
-* In file **src/Stockfish/misc.cpp** we have to remove call to `_get_pgmptr` as this time Stockfish is not a standalone program.
-So, in function `std::string CommandLine::get_binary_directory` remove the matching section :
-
-```cpp
-#ifdef _WIN32
-    pathSeparator = "\\";
-    #ifdef _MSC_VER
-    // Under windows argv[0] may not have the extension. Also _get_pgmptr() had
-    // issues in some Windows 10 versions, so check returned values carefully.
-    char* pgmptr = nullptr;
-    if (!_get_pgmptr(&pgmptr) && pgmptr != nullptr && *pgmptr)
-        argv0 = pgmptr;
-    #endif
-#else
-    pathSeparator = "/";
-#endif
-```
-
-and replace with the following :
-
-```cpp
-#ifdef _WIN32
-    pathSeparator = "\\";
-    std::string basePath = "build\\windows\\x64\\runner\\";
-    #ifdef NDEBUG
-        argv0 = basePath + "Release";
-    #else
-        argv0 = basePath + "Debug";
-    #endif
-#else
-    pathSeparator = "/";
-#endif
-```
-
-* In file ***src/Stockfish/uci.cpp***, a lambda function can make the compilation failing, as the MSVC compiler is strictier than GCC. So in function `std::string UCIEngine::format_score`, in the lambda using `TB_CP`, we just need to declare it inside the lambda :
-
-```cpp
-const auto    format =
-      overload{[](Score::Mate mate) -> std::string {
-                   auto m = (mate.plies > 0 ? (mate.plies + 1) : mate.plies) / 2;
-                   return std::string("mate ") + std::to_string(m);
-               },
-               [](Score::Tablebase tb) -> std::string {
-                    constexpr int TB_CP = 20000;
-                   return std::string("cp ")
-                        + std::to_string((tb.win ? TB_CP - tb.plies : -TB_CP - tb.plies));
-               },
-               [](Score::InternalUnits units) -> std::string {
-                   return std::string("cp ") + std::to_string(units.value);
-               }};
-```
-
-#### Adapting the NNUE names
-
-1. Copy the big and small nnue names from **src/Stockfish/src/evaluate.h**
-2. Replace their names in file **src/CMakeLists.txt**
-3. Also replace their names in file **ios/stockfish_chess_engine.podspec** and **macos/stockfish_chess_engine.podspec**
-
-### Changing the downloaded NNUE file
+### Changing the downloaded NNUE file (big or small NNUE)
 
 1. Go to [Stockfish NNUE files page](https://tests.stockfishchess.org/nns) and select a reference from the list.
 2. Modify CMakeLists.txt, by replacing lines starting by `set (NNUE_NAME )` by setting your reference name, without any quote.
-3. Modify the reference name in `evaluate.h` in the line containing `#define EvalFileDefaultName   `, by setting your nnue file name, with the quotes of course.
+3. Modify the reference name in `evaluate.h` in the line containing `#define EvalFileDefaultName`(Big or Small), by setting your nnue file name, with the quotes of course.
 4. Don't forget to clean project before building again (`flutter clean` then `flutter pub get`).
 
 ## Credits

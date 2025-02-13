@@ -62,11 +62,16 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
     bool smallNet = use_smallnet(pos);
     int  v;
 
+    #ifndef IS_MOBILE_TARGET
     auto [psqt, positional] = smallNet ? networks.small.evaluate(pos, &caches.small)
                                        : networks.big.evaluate(pos, &caches.big);
+    #else
+    auto [psqt, positional] = networks.small.evaluate(pos, &caches.small);
+    #endif
 
     Value nnue = (125 * psqt + 131 * positional) / 128;
 
+    #ifndef IS_MOBILE_TARGET
     // Re-evaluate the position when higher eval accuracy is worth the time spent
     if (smallNet && (nnue * psqt < 0 || std::abs(nnue) < 227))
     {
@@ -74,6 +79,7 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
         nnue                       = (125 * psqt + 131 * positional) / 128;
         smallNet                   = false;
     }
+    #endif
 
     // Blend optimism and eval with nnue complexity
     int nnueComplexity = std::abs(psqt - positional);
@@ -112,7 +118,11 @@ std::string Eval::trace(Position& pos, const Eval::NNUE::Networks& networks) {
 
     ss << std::showpoint << std::showpos << std::fixed << std::setprecision(2) << std::setw(15);
 
+    #ifdef IS_MOBILE_TARGET
+    auto [psqt, positional] = networks.small.evaluate(pos, &caches->small);
+    #else
     auto [psqt, positional] = networks.big.evaluate(pos, &caches->big);
+    #endif
     Value v                 = psqt + positional;
     v                       = pos.side_to_move() == WHITE ? v : -v;
     ss << "NNUE evaluation        " << 0.01 * UCIEngine::to_cp(v, pos) << " (white side)\n";

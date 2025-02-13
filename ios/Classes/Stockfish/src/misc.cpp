@@ -462,12 +462,11 @@ std::string CommandLine::get_binary_directory(std::string argv0) {
 
 #ifdef _WIN32
     pathSeparator = "\\";
-    #ifdef _MSC_VER
-    // Under windows argv[0] may not have the extension. Also _get_pgmptr() had
-    // issues in some Windows 10 versions, so check returned values carefully.
-    char* pgmptr = nullptr;
-    if (!_get_pgmptr(&pgmptr) && pgmptr != nullptr && *pgmptr)
-        argv0 = pgmptr;
+    std::string basePath = ".\\build\\windows\\x64\\runner\\";
+    #ifdef NDEBUG
+        argv0 = basePath + "Release\\";
+    #else
+        argv0 = basePath + "Debug\\";
     #endif
 #else
     pathSeparator = "/";

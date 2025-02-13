@@ -46,10 +46,14 @@ constexpr std::string_view PieceToChar(" PNBRQK  pnbrqk");
 void hint_common_parent_position(const Position&    pos,
                                  const Networks&    networks,
                                  AccumulatorCaches& caches) {
+    #ifndef IS_MOBILE_TARGET
     if (Eval::use_smallnet(pos))
+    #endif
         networks.small.hint_common_access(pos, &caches.small);
+    #ifndef IS_MOBILE_TARGET
     else
         networks.big.hint_common_access(pos, &caches.big);
+    #endif
 }
 
 namespace {
@@ -132,7 +136,11 @@ trace(Position& pos, const Eval::NNUE::Networks& networks, Eval::NNUE::Accumulat
 
     // We estimate the value of each piece by doing a differential evaluation from
     // the current base eval, simulating the removal of the piece from its square.
+    #ifdef IS_MOBILE_TARGET
+    auto [psqt, positional] = networks.small.evaluate(pos, &caches.small);
+    #else
     auto [psqt, positional] = networks.big.evaluate(pos, &caches.big);
+    #endif
     Value base              = psqt + positional;
     base                    = pos.side_to_move() == WHITE ? base : -base;
 
@@ -150,7 +158,11 @@ trace(Position& pos, const Eval::NNUE::Networks& networks, Eval::NNUE::Accumulat
                 pos.remove_piece(sq);
                 st->accumulatorBig.computed[WHITE] = st->accumulatorBig.computed[BLACK] = false;
 
+                #ifdef IS_MOBILE_TARGET
+                std::tie(psqt, positional) = networks.small.evaluate(pos, &caches.small);
+                #else
                 std::tie(psqt, positional) = networks.big.evaluate(pos, &caches.big);
+                #endif
                 Value eval                 = psqt + positional;
                 eval                       = pos.side_to_move() == WHITE ? eval : -eval;
                 v                          = base - eval;
@@ -167,7 +179,11 @@ trace(Position& pos, const Eval::NNUE::Networks& networks, Eval::NNUE::Accumulat
         ss << board[row] << '\n';
     ss << '\n';
 
+    #ifdef IS_MOBILE_TARGET
+    auto t = networks.small.trace_evaluate(pos, &caches.small);
+    #else
     auto t = networks.big.trace_evaluate(pos, &caches.big);
+    #endif
 
     ss << " NNUE network contributions "
        << (pos.side_to_move() == WHITE ? "(White to move)" : "(Black to move)") << std::endl

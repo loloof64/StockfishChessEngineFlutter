@@ -92,11 +92,15 @@ struct AccumulatorCaches {
 
     template<typename Networks>
     void clear(const Networks& networks) {
+        #ifndef IS_MOBILE_TARGET
         big.clear(networks.big);
+        #endif
         small.clear(networks.small);
     }
 
+    #ifndef IS_MOBILE_TARGET
     Cache<TransformedFeatureDimensionsBig>   big;
+    #endif
     Cache<TransformedFeatureDimensionsSmall> small;
 };
 

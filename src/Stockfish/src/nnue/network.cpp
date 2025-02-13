@@ -45,12 +45,16 @@ namespace {
 //     const unsigned int         gEmbeddedNNUESize;    // the size of the embedded file
 // Note that this does not work in Microsoft Visual Studio.
 #if !defined(_MSC_VER) && !defined(NNUE_EMBEDDING_OFF)
+#ifndef IS_MOBILE_TARGET
 INCBIN(EmbeddedNNUEBig, EvalFileDefaultNameBig);
+#endif
 INCBIN(EmbeddedNNUESmall, EvalFileDefaultNameSmall);
 #else
+#ifndef IS_MOBILE_TARGET
 const unsigned char        gEmbeddedNNUEBigData[1]   = {0x0};
 const unsigned char* const gEmbeddedNNUEBigEnd       = &gEmbeddedNNUEBigData[1];
 const unsigned int         gEmbeddedNNUEBigSize      = 1;
+#endif
 const unsigned char        gEmbeddedNNUESmallData[1] = {0x0};
 const unsigned char* const gEmbeddedNNUESmallEnd     = &gEmbeddedNNUESmallData[1];
 const unsigned int         gEmbeddedNNUESmallSize    = 1;
@@ -71,9 +75,11 @@ struct EmbeddedNNUE {
 using namespace Stockfish::Eval::NNUE;
 
 EmbeddedNNUE get_embedded(EmbeddedNNUEType type) {
+    #ifndef IS_MOBILE_TARGET
     if (type == EmbeddedNNUEType::BIG)
         return EmbeddedNNUE(gEmbeddedNNUEBigData, gEmbeddedNNUEBigEnd, gEmbeddedNNUEBigSize);
     else
+    #endif
         return EmbeddedNNUE(gEmbeddedNNUESmallData, gEmbeddedNNUESmallEnd, gEmbeddedNNUESmallSize);
 }
 
@@ -444,9 +450,11 @@ bool Network<Arch, Transformer>::write_parameters(std::ostream&      stream,
 
 // Explicit template instantiation
 
+#ifndef IS_MOBILE_TARGET
 template class Network<
   NetworkArchitecture<TransformedFeatureDimensionsBig, L2Big, L3Big>,
   FeatureTransformer<TransformedFeatureDimensionsBig, &StateInfo::accumulatorBig>>;
+#endif
 
 template class Network<
   NetworkArchitecture<TransformedFeatureDimensionsSmall, L2Small, L3Small>,

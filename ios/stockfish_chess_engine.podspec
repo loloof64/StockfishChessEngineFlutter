@@ -20,6 +20,7 @@ Use Stockfish chess engine directly in your Flutter project.
   s.source           = { :path => '.' }
 
   s.xcconfig = {
+    'GCC_PREPROCESSOR_DEFINITIONS' => "IS_MOBILE_TARGET=1",
     #-- add the path to the downloaded nnue files
     'HEADER_SEARCH_PATHS' => '"${PODS_ROOT}/stockfish_chess_engine/"',
     'CLANG_CXX_LANGUAGE_STANDARD' => 'c++17',
@@ -43,14 +44,12 @@ Use Stockfish chess engine directly in your Flutter project.
       :execution_position => :before_compile,
       :script => <<-SCRIPT
         # setup variables
-        NNUE_NAME_BIG="nn-1111cefa1111.nnue"
         NNUE_NAME_SMALL="nn-37f18f62d772.nnue"
         DOWNLOAD_BASE_URL="https://tests.stockfishchess.org/api/nn"
         DEST_DIR="${PODS_ROOT}/stockfish_chess_engine/"
 
         # download
         mkdir -p $DEST_DIR
-        curl -L -o "$DEST_DIR/$NNUE_NAME_BIG" "$DOWNLOAD_BASE_URL/$NNUE_NAME_BIG"
         curl -L -o "$DEST_DIR/$NNUE_NAME_SMALL" "$DOWNLOAD_BASE_URL/$NNUE_NAME_SMALL"
       SCRIPT
     }

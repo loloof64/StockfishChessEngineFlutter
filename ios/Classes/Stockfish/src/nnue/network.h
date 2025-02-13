@@ -37,7 +37,9 @@
 namespace Stockfish::Eval::NNUE {
 
 enum class EmbeddedNNUEType {
+  #ifndef IS_MOBILE_TARGET
     BIG,
+  #endif
     SMALL,
 };
 
@@ -109,20 +111,33 @@ using SmallFeatureTransformer =
 using SmallNetworkArchitecture =
   NetworkArchitecture<TransformedFeatureDimensionsSmall, L2Small, L3Small>;
 
+#ifndef IS_MOBILE_TARGET
 using BigFeatureTransformer =
   FeatureTransformer<TransformedFeatureDimensionsBig, &StateInfo::accumulatorBig>;
 using BigNetworkArchitecture = NetworkArchitecture<TransformedFeatureDimensionsBig, L2Big, L3Big>;
+#endif
 
+#ifndef IS_MOBILE_TARGET
 using NetworkBig   = Network<BigNetworkArchitecture, BigFeatureTransformer>;
+#endif
 using NetworkSmall = Network<SmallNetworkArchitecture, SmallFeatureTransformer>;
 
 
 struct Networks {
-    Networks(NetworkBig&& nB, NetworkSmall&& nS) :
+    Networks(
+      #ifndef IS_MOBILE_TARGET
+      NetworkBig&& nB,
+      #endif
+       NetworkSmall&& nS
+      ) :
+      #ifndef IS_MOBILE_TARGET
         big(std::move(nB)),
+      #endif
         small(std::move(nS)) {}
 
+    #ifndef IS_MOBILE_TARGET
     NetworkBig   big;
+    #endif
     NetworkSmall small;
 };
 
