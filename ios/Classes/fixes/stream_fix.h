@@ -40,6 +40,7 @@ class FakeStream {
     bool try_get_line(std::string& val);
 
     void close();
+    void reopen();
     bool is_closed();
 
     std::streambuf* rdbuf();

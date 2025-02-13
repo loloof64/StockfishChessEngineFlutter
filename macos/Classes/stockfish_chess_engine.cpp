@@ -15,11 +15,12 @@ char buffer[BUFFER_SIZE + 1];
 char errBuffer[BUFFER_SIZE + 1];
 
 FFI_PLUGIN_EXPORT int stockfish_main() {
+  fakeout.reopen();
+  fakein.reopen();
+
   int argc = 1;
   char *argv[] = {(char *)""};
   int exitCode = main(argc, argv);
-
-  fakeout << QUITOK << "\n";
 
 #if _WIN32
   Sleep(100);

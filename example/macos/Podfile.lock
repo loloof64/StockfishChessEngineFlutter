@@ -25,9 +25,9 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
-  screen_retriever_macos: 776e0fa5d42c6163d2bf772d22478df4b302b161
-  stockfish_chess_engine: d5cbba7371ca96d4eb0f42084554e2e2485fb686
-  window_manager: 3a1844359a6295ab1e47659b1a777e36773cd6e8
+  screen_retriever_macos: 452e51764a9e1cdb74b3c541238795849f21557f
+  stockfish_chess_engine: c014644f9dc56274bac76a7c1c8dd9fd9f7637f0
+  window_manager: 1d01fa7ac65a6e6f83b965471b1a7fdd3f06166c
 
 PODFILE CHECKSUM: 236401fc2c932af29a9fcf0e97baeeb2d750d367
 
