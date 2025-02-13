@@ -1,3 +1,7 @@
+## 0.8.0
+
+- Only download and work with the small NNUE on mobile devices (Android/IPhone)
+
 ## 0.7.1
 
 - Fix for Windows : the plugin did not compile

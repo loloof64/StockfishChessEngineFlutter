@@ -54,7 +54,7 @@ You can see an example usage in example folder.
 
 ### Changing Stockfish source files
 
-Please, see instructions in file UPGRADING_STOCKFISH.md
+Please, see instructions in file [UPGRADING_STOCKFISH.md](./UPGRADING_STOCKFISH.md)
 
 ### Changing the downloaded NNUE file (big or small NNUE)
 
