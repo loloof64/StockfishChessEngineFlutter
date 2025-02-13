@@ -1,6 +1,7 @@
 ## 0.8.1
 
-- Bug fix : we can stop and restart Stockfish. (Also useful for live reload)
+- Bug fix : we can stop and restart Stockfish. (Also useful for Flutter applications live reload)
+- Removed the use of WindowManager on mobile targets.
 
 ## 0.8.0
 
