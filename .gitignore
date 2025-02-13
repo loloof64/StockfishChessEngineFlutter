@@ -35,7 +35,3 @@ build/
 *.nnue
 *.salive
 /.vscode
-Podfile.lock
-
-example/ios/Podfile.lock
-example/macos/Podfile.lock
