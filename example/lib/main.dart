@@ -151,11 +151,11 @@ class MyAppState extends State<MyApp> with WindowListener {
   }
 
   void _startStockfishIfNecessary() {
+    if (_stockfish.state.value == StockfishState.ready ||
+        _stockfish.state.value == StockfishState.starting) {
+      return;
+    }
     setState(() {
-      if (_stockfish.state.value == StockfishState.ready ||
-          _stockfish.state.value == StockfishState.starting) {
-        return;
-      }
       _doStartStockfish();
     });
   }

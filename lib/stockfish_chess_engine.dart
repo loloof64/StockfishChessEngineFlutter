@@ -54,8 +54,9 @@ class Stockfish {
   late StreamSubscription _stderrSubscription;
 
   Stockfish._({this.completer}) {
-    _mainSubscription =
-        _mainPort.listen((message) => _cleanUp(message is int ? message : 1));
+    _mainSubscription = _mainPort.listen((message) {
+      _cleanUp(message is int ? message : 1);
+    });
     _stdoutSubscription = _stdoutPort.listen((message) {
       if (message is String) {
         _stdoutController.sink.add(message);

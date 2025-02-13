@@ -1,3 +1,7 @@
+## 0.8.1
+
+- Bug fix : we can stop and restart Stockfish. (Also useful for live reload)
+
 ## 0.8.0
 
 - Only download and work with the small NNUE on mobile devices (Android/IPhone)
