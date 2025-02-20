@@ -1,3 +1,7 @@
+## 0.8.2
+
+- Fix dynamic library path for linux
+
 ## 0.8.1
 
 - Bug fix : we can stop and restart Stockfish. (Also useful for Flutter applications live reload)

@@ -27,7 +27,7 @@ final DynamicLibrary _dylib = () {
   }
   if (Platform.isLinux) {
     return DynamicLibrary.open(
-        '${File(Platform.resolvedExecutable).parent.parent.path}/plugins/stockfish_chess_engine/shared/lib$_libName.so');
+        'lib$_libName.so');
   }
   throw UnsupportedError('Unknown platform: ${Platform.operatingSystem}');
 }();
